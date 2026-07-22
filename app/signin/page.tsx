@@ -65,7 +65,7 @@ export default function SignInPage() {
           disabled={submittingGoogle}
           onClick={() => {
             setSubmittingGoogle(true)
-            signIn('google')
+            signIn('google', { callbackUrl: '/households' })
           }}
         >
           {submittingGoogle ? 'Redirecting…' : 'Sign in with Google'}
@@ -81,7 +81,7 @@ export default function SignInPage() {
           onSubmit={async (e) => {
             e.preventDefault()
             setSubmittingEmail(true)
-            await signIn('email', { email, redirect: false })
+            await signIn('email', { email, redirect: false, callbackUrl: '/households' })
             setSubmittingEmail(false)
             setSent(true)
           }}
