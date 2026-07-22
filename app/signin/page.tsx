@@ -52,9 +52,6 @@ export default function SignInPage() {
         <h1 className="text-3xl font-semibold text-neutral-900 dark:text-neutral-100">
           Bachtiar Ledger
         </h1>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          No more &quot;did you pay me back?&quot; texts. Who owes who, and why.
-        </p>
       </div>
 
       <InAppBrowserWarning />
