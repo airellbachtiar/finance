@@ -1,0 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Domain models (Household, Member, Expense, Settlement, etc.) are added
+// incrementally by later work items — this baseline intentionally has none yet.

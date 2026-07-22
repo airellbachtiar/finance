@@ -1,0 +1,127 @@
+project:
+  name: Family Ledger
+  description: Shared ledger web app that answers "who owes who, and why" across a
+    family split between the Netherlands and Indonesia.
+  created: 2026-07-22T00:00:00Z
+  fire_version: 0.1.74
+workspace:
+  type: greenfield
+  structure: monolith
+  autonomy_bias: balanced
+  run_scope_preference: wide
+  run_scope_history:
+    - choice: wide
+      items_count: 7
+      timestamp: 2026-07-22T00:00:00Z
+intents:
+  - id: family-ledger
+    title: Family Ledger — Shared Household & Family Balance Tracker
+    status: in_progress
+    work_items:
+      - id: project-scaffold
+        title: Project scaffold, database, and deployment pipeline
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on: []
+      - id: auth-setup
+        title: Authentication (email + Google, invite-only)
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on:
+          - project-scaffold
+      - id: household-member-model
+        title: Household and member data model
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on:
+          - project-scaffold
+      - id: expense-model
+        title: Expense model with splits and currency conversion
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on:
+          - household-member-model
+      - id: settlement-model
+        title: Settlement recording (transfers between members)
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on:
+          - household-member-model
+      - id: balance-engine
+        title: Balance engine (derive balances from the event log)
+        status: pending
+        complexity: high
+        mode: validate
+        depends_on:
+          - expense-model
+          - settlement-model
+      - id: dashboard-ui
+        title: "Dashboard: who owes who, how much, since when"
+        status: pending
+        complexity: medium
+        mode: confirm
+        depends_on:
+          - balance-engine
+runs:
+  active:
+    - id: run-finance-001
+      scope: wide
+      work_items:
+        - id: project-scaffold
+          intent: family-ledger
+          mode: confirm
+          status: completed
+          current_phase: review
+          checkpoint_state: approved
+          current_checkpoint: plan
+          completed_at: 2026-07-22T14:28:59.290Z
+        - id: auth-setup
+          intent: family-ledger
+          mode: confirm
+          status: in_progress
+          current_phase: plan
+          checkpoint_state: none
+          current_checkpoint: plan
+        - id: household-member-model
+          intent: family-ledger
+          mode: confirm
+          status: pending
+          current_phase: null
+          checkpoint_state: none
+          current_checkpoint: null
+        - id: expense-model
+          intent: family-ledger
+          mode: confirm
+          status: pending
+          current_phase: null
+          checkpoint_state: none
+          current_checkpoint: null
+        - id: settlement-model
+          intent: family-ledger
+          mode: confirm
+          status: pending
+          current_phase: null
+          checkpoint_state: none
+          current_checkpoint: null
+        - id: balance-engine
+          intent: family-ledger
+          mode: validate
+          status: pending
+          current_phase: null
+          checkpoint_state: none
+          current_checkpoint: null
+        - id: dashboard-ui
+          intent: family-ledger
+          mode: confirm
+          status: pending
+          current_phase: null
+          checkpoint_state: none
+          current_checkpoint: null
+      current_item: auth-setup
+      started: 2026-07-22T14:01:16.087Z
+  completed: []
