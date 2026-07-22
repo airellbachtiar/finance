@@ -348,3 +348,59 @@ No issues found. This work item closely mirrored `expense-model`'s established p
 
 - `.specs-fire/standards/coding-standards.md`
 - `.specs-fire/standards/testing-standards.md`
+
+---
+
+# Code Review Report — balance-engine
+
+**Reviewed**: 2026-07-22T18:12:00Z
+**Files Reviewed**: 4
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 1 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 1 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **1** | **1** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `lib/balance-engine.ts`, `lib/balance-engine.test.ts` (source, test)
+- `lib/expenses.ts`, `lib/expenses.test.ts` (source, test — modified per the approved design)
+
+## Auto-Fixed Issues
+
+### 1. [Code Quality] `for...of` over a `Map` failed the TS target check
+
+- **File**: `lib/balance-engine.ts`
+- **Description**: `next build`'s type-check rejected direct `Map` iteration under this project's TypeScript target.
+- **Diff**:
+
+```diff
+-  for (const [key, state] of net) {
++  for (const [key, state] of Array.from(net.entries())) {
+```
+
+## Applied Suggestions
+
+### 1. [Architecture] Cross-household validation gap, closed as planned in the design doc
+
+- **File**: `lib/expenses.ts`
+- **Description**: Per the approved design's Key Decisions, added `assertMembersBelongToHousehold` and call it from both the explicit-`splits` and `memberIds`-subset paths of `resolveSplits`.
+- **Rationale**: This was identified and pre-approved during the design checkpoint specifically because it's the same class of bug the acceptance criteria elsewhere calls out ("no cross-household leakage") — closing it here rather than as an afterthought.
+- **Risk Level**: Low — additive validation, covered by a new test in `lib/expenses.test.ts`.
+
+## Skipped Suggestions
+
+No suggestions were skipped.
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`
+- `.specs-fire/intents/family-ledger/work-items/balance-engine-design.md` (design doc, Checkpoint 1)

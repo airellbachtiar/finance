@@ -40,18 +40,18 @@ work_items:
   - id: balance-engine
     intent: family-ledger
     mode: validate
-    status: in_progress
-    current_phase: plan
-    checkpoint_state: none
+    status: completed
+    current_phase: review
+    checkpoint_state: approved
     current_checkpoint: plan
   - id: dashboard-ui
     intent: family-ledger
     mode: confirm
-    status: pending
-    current_phase: null
+    status: in_progress
+    current_phase: plan
     checkpoint_state: none
-    current_checkpoint: null
-current_item: balance-engine
+    current_checkpoint: plan
+current_item: dashboard-ui
 status: in_progress
 started: 2026-07-22T14:01:16.087Z
 completed: null
@@ -68,12 +68,12 @@ wide (7 work items)
 3. **household-member-model** (confirm) — completed
 4. **expense-model** (confirm) — completed
 5. **settlement-model** (confirm) — completed
-6. **balance-engine** (validate) — in_progress
-7. **dashboard-ui** (confirm) — pending
+6. **balance-engine** (validate) — completed
+7. **dashboard-ui** (confirm) — in_progress
 
 
 ## Current Item
-balance-engine (validate)
+dashboard-ui (confirm)
 
 ## Files Created
 (none yet)

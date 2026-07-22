@@ -80,6 +80,15 @@ export async function deleteExpense(expenseId: string) {
   await prisma.expense.delete({ where: { id: expenseId } })
 }
 
+async function assertMembersBelongToHousehold(householdId: string, memberIds: string[]) {
+  const count = await prisma.member.count({
+    where: { id: { in: memberIds }, householdId },
+  })
+  if (count !== memberIds.length) {
+    throw new Error('All split members must belong to the expense’s household')
+  }
+}
+
 async function resolveSplits(
   householdId: string,
   total: Prisma.Decimal,
@@ -91,11 +100,19 @@ async function resolveSplits(
       memberId: s.memberId,
       shareEur: new Prisma.Decimal(s.shareEur),
     }))
+    await assertMembersBelongToHousehold(
+      householdId,
+      resolved.map((s) => s.memberId)
+    )
     const sum = resolved.reduce((acc, s) => acc.plus(s.shareEur), new Prisma.Decimal(0))
     if (!sum.equals(total)) {
       throw new Error(`Splits must sum to the expense total (${total.toString()}), got ${sum.toString()}`)
     }
     return resolved
+  }
+
+  if (memberIds && memberIds.length > 0) {
+    await assertMembersBelongToHousehold(householdId, memberIds)
   }
 
   const targetMemberIds =

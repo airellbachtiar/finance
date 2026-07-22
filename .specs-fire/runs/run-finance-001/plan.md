@@ -250,4 +250,38 @@ Cross-household leakage prevention (an acceptance criterion) isn't fully enforce
 - No IBAN/QR/"mark as paid" UX here — deferred per the intent brief. This is purely "record that a transfer happened."
 
 ---
+*Plan approved at checkpoint. Execution follows.*
+
+---
+
+## Work Item: balance-engine
+
+Based on the approved design doc: `.specs-fire/intents/family-ledger/work-items/balance-engine-design.md`
+
+### Implementation Checklist
+
+- [ ] Add household-membership validation to `lib/expenses.ts`'s explicit-splits path (closes the cross-household gap found during design); add the corresponding test to `lib/expenses.test.ts`
+- [ ] Implement `applyDebt`/pairwise netting core + `getHouseholdBalances(householdId)` in `lib/balance-engine.ts`
+- [ ] `lib/balance-engine.test.ts` covering: equal split, subset/override split, multi-currency (IDR) expense, single settlement fully cancelling a debt, bulk settlement clearing several months, mixed EUR/IDR history, order-independence, zero-net pairs excluded from results
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `lib/balance-engine.ts` | `getHouseholdBalances(householdId)` — pairwise net-debt computation |
+| `lib/balance-engine.test.ts` | All scenarios from the design doc's implementation checklist |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `lib/expenses.ts` | Validate that every `memberId` in an explicit `splits` array belongs to the expense's household |
+| `lib/expenses.test.ts` | Add: explicit split referencing a member from a different household is rejected |
+
+## Technical Details
+
+- No API routes or UI in this work item — `dashboard-ui` (next and final work item) is what calls `getHouseholdBalances` and renders it.
+- Following the design doc's worked example precisely as the first test case (rent split 3 ways, one brother settles in full, the other doesn't).
+
+---
 *Plan pending approval.*

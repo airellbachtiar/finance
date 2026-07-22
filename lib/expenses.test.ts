@@ -202,4 +202,43 @@ describe('expenses', () => {
     const remainingSplits = await prisma.expenseSplit.findMany({ where: { expenseId: expense.id } })
     expect(remainingSplits).toHaveLength(0)
   })
+
+  it('rejects a split (explicit or subset) referencing a member from a different household', async () => {
+    const user1 = await makeUser('vitest-expense-8a@example.com')
+    const user2 = await makeUser('vitest-expense-8b@example.com')
+    const household1 = await createHousehold('Apartment', user1.id, 'Admin 1')
+    const household2 = await createHousehold('Family', user2.id, 'Admin 2')
+    createdHouseholdIds.push(household1.id, household2.id)
+
+    const admin1 = await prisma.member.findFirstOrThrow({
+      where: { householdId: household1.id, userId: user1.id },
+    })
+    const admin2 = await prisma.member.findFirstOrThrow({
+      where: { householdId: household2.id, userId: user2.id },
+    })
+
+    await expect(
+      createExpense({
+        householdId: household1.id,
+        payerId: admin1.id,
+        date: new Date('2026-07-01'),
+        category: 'Rent',
+        originalCurrency: 'EUR',
+        originalAmount: 100,
+        memberIds: [admin1.id, admin2.id],
+      })
+    ).rejects.toThrow('must belong to the expense')
+
+    await expect(
+      createExpense({
+        householdId: household1.id,
+        payerId: admin1.id,
+        date: new Date('2026-07-01'),
+        category: 'Rent',
+        originalCurrency: 'EUR',
+        originalAmount: 100,
+        splits: [{ memberId: admin2.id, shareEur: 100 }],
+      })
+    ).rejects.toThrow('must belong to the expense')
+  })
 })

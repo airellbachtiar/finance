@@ -4,9 +4,10 @@ title: "Dashboard: who owes who, how much, since when"
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: pending
-depends_on: [balance-engine]
-created: "2026-07-22T00:00:00Z"
+status: in_progress
+depends_on:
+  - balance-engine
+created: 2026-07-22T00:00:00Z
 ---
 
 # Work Item: Dashboard: who owes who, how much, since when

@@ -4,11 +4,13 @@ title: Balance engine (derive balances from the event log)
 intent: family-ledger
 complexity: high
 mode: validate
-status: in_progress
+status: completed
 depends_on:
   - expense-model
   - settlement-model
 created: 2026-07-22T00:00:00Z
+run_id: run-finance-001
+completed_at: 2026-07-22T16:08:01.035Z
 ---
 
 # Work Item: Balance engine (derive balances from the event log)
