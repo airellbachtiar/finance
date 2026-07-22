@@ -4,10 +4,12 @@ title: Household and member data model
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: in_progress
+status: completed
 depends_on:
   - project-scaffold
 created: 2026-07-22T00:00:00Z
+run_id: run-finance-001
+completed_at: 2026-07-22T15:35:09.545Z
 ---
 
 # Work Item: Household and member data model

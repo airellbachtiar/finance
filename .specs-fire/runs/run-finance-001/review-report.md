@@ -193,3 +193,71 @@ No suggestions were skipped.
 ## Security Note
 
 `GOOGLE_CLIENT_SECRET`, the Neon `DATABASE_URL`, and the Gmail app password all live only in `.env.local` (gitignored) and Vercel's encrypted environment variables — confirmed via `git status`/`git check-ignore` that none are present in tracked files.
+
+---
+
+# Code Review Report — household-member-model
+
+**Reviewed**: 2026-07-22T17:45:00Z
+**Files Reviewed**: 14
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 0 | 1 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 2 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **0** | **3** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `prisma/schema.prisma` (schema)
+- `lib/households.ts`, `lib/households.test.ts` (source, test)
+- `lib/invites.ts`, `lib/invites.test.ts` (source, test — modified)
+- `lib/auth.ts` (source — modified)
+- `types/next-auth.d.ts` (types)
+- `app/api/households/route.ts`, `app/api/households/[id]/members/route.ts`, `app/api/households/[id]/members/[memberId]/route.ts` (source)
+- `app/households/page.tsx`, `app/households/HouseholdForm.tsx` (source)
+- `app/households/[id]/page.tsx`, `app/households/[id]/MemberForm.tsx`, `app/households/[id]/MemberList.tsx` (source)
+
+## Applied Suggestions
+
+### 1. [Architecture] `session.user.id` not populated under JWT strategy
+
+- **File**: `lib/auth.ts`
+- **Description**: Every household-scoped route relies on `session.user.id`, but NextAuth's JWT session strategy doesn't include it by default — only `name`/`email`/`image`.
+- **Rationale**: Without this, every `getServerSession` call in the new routes would see `session.user.id` as `undefined`, and all of them would 401.
+- **Risk Level**: Low — additive `jwt`/`session` callbacks, verified by the existing test suite still passing and a clean build.
+
+### 2. [Architecture] Latent dangling-User bug from `auth-setup`
+
+- **File**: `lib/auth.ts`
+- **Description**: Caught while touching this file again — the Prisma adapter creates the `User` row before `signIn` runs, so a rejected (uninvited) sign-in was leaving an orphan `User` behind.
+- **Rationale**: Low-impact but easy to fix while already in this file; left unaddressed it would slowly accumulate junk rows from anyone who tries to sign in without an invite.
+- **Risk Level**: Low.
+
+### 3. [Code Quality] Initial `MemberForm.tsx` draft used a `React.createContext` for a remove-button callback
+
+- **File**: `app/households/[id]/MemberForm.tsx`
+- **Description**: First draft threaded a remove-member callback through a context provider rendered as `{null}` — unnecessary indirection for a single-page form/list split.
+- **Rationale**: Simplified to a dedicated `MemberList.tsx` client component that owns its own remove-button handler directly; no context needed.
+- **Risk Level**: Low — caught and rewritten before this ever hit a build.
+
+## Skipped Suggestions
+
+No suggestions were skipped.
+
+## Project Tooling Used
+
+- **ESLint**: clean, via `next build`'s lint + type-check step
+- **TypeScript**: `types/next-auth.d.ts` module augmentation compiles cleanly
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`
+- `.specs-fire/standards/system-architecture.md`

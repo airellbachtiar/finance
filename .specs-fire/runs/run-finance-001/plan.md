@@ -111,4 +111,52 @@ Email provider requires an SMTP sender for magic links. Using Gmail SMTP with an
 - Google OAuth redirect URIs are already configured for both `localhost:3000` and the production Vercel URL.
 
 ---
-*Plan approved at checkpoint. Execution follows.*
+
+## Work Item: household-member-model
+
+### Approach
+
+Add `Household` and `Member` models. A `Member` is a single household membership: it optionally links to a `User` (nullable — this is what makes Mama representable) and always belongs to exactly one `Household`, with a `role` (`ADMIN`/`MEMBER`). Someone who's part of two households (you, in both Apartment and Family) simply has two separate `Member` rows sharing the same `userId`.
+
+Any authenticated user can create a household — they become its first `ADMIN` member automatically (like creating a group in Splitwise). Adding a login-required member reuses/extends the `Invite` model from `auth-setup` — an admin creates an invite scoped to a household, and when that person signs in for the first time, a `Member` row is created for them automatically. Adding a non-login member (e.g. Mama) just creates a `Member` row directly with a display name and no `userId` — no invite involved.
+
+**Fixing a latent issue from `auth-setup` while I'm in `lib/auth.ts` anyway**: NextAuth's Prisma adapter creates the `User` row *before* the `signIn` callback runs, so an uninvited person attempting Google sign-in would leave a dangling, useless `User` record even though we correctly reject them. Adding cleanup: if `signIn` rejects, delete that just-created `User`.
+
+Cross-household leakage prevention (an acceptance criterion) isn't fully enforceable yet since `Expense`/`Settlement` don't exist — but the decision that governs it is locked in now: those future models will always carry a direct `householdId` foreign key (not just reachable via `Member`), so every query scopes with `where: { householdId }` and there's no path to accidentally join across households.
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `lib/households.ts` | `createHousehold`, `isHouseholdAdmin`, `addMember` (login-invite path or direct non-login path), `removeMember` |
+| `app/api/households/route.ts` | `POST` create a household (creator becomes ADMIN), `GET` list the current user's households |
+| `app/api/households/[id]/members/route.ts` | `GET` list members (must belong to household), `POST` add a member (admin only — either `{ email }` to invite a login member, or `{ displayName }` for a non-login member) |
+| `app/api/households/[id]/members/[memberId]/route.ts` | `DELETE` remove a member (admin only; refuses to remove the last remaining admin) |
+| `app/households/page.tsx` + `app/households/HouseholdForm.tsx` | List your households, create a new one |
+| `app/households/[id]/page.tsx` + `app/households/[id]/MemberForm.tsx` | Household detail: members list (name, role, login/no-login), add-member form, remove buttons (admin only) |
+| `lib/households.test.ts` | `createHousehold` creates household + admin member; `addMember` (login invite path creates a household-scoped `Invite`, non-login path creates a `Member` directly); `removeMember` refuses to remove the last admin; a member fetched under household A never appears under household B |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `prisma/schema.prisma` | Add `Household`, `Member`, `Role` enum; extend `Invite` with optional `householdId` |
+| `lib/invites.ts` | `consumeInvite` now takes `(email, userId, displayName)` and creates the `Member` row when the invite is household-scoped |
+| `lib/auth.ts` | Pass `user.id`/`user.name` into `consumeInvite`; delete the dangling `User` on rejected sign-in |
+| `lib/invites.test.ts` | Update for the new `consumeInvite` signature; add a case covering household-linking on consumption |
+
+### Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `lib/households.test.ts` | Household creation → creator is ADMIN; login-invite path creates a scoped Invite; non-login path creates a Member directly; removing the last admin is refused; household-scoped queries don't leak across households |
+| `lib/invites.test.ts` (updated) | Consuming a household-scoped invite creates the corresponding Member row with the right display name |
+
+## Technical Details
+
+- `Member` uniqueness: `@@unique([householdId, userId])` — Postgres treats each `NULL` as distinct in a unique index, so multiple non-login members (`userId: null`) in the same household are allowed, which is exactly what we want (there could be more than one non-login member someday).
+- No global "admin" concept — admin-ness is per-household (a `Member.role`), except `ADMIN_EMAIL` which remains a bootstrap-only superadmin for the original `/invite` page (household-less invites). Household member-adding goes through the new household-scoped endpoint instead.
+- UI stays plain/utilitarian (forms, no styling polish) — same bar as `auth-setup`'s sign-in/invite pages.
+
+---
+*Plan pending approval.*

@@ -17,6 +17,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  members       Member[]
 }
 
 model Account {
@@ -55,13 +56,46 @@ model VerificationToken {
 }
 
 // --- Invite gating ---
-// Minimal for now: gates whether an email may create a User at all.
-// household-member-model extends this with a household reference once
-// Household exists — this model is not the final shape.
+// Gates whether an email may create a User at all, and — when scoped to a
+// household — automatically creates the resulting Member on first sign-in.
 
 model Invite {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  createdAt DateTime  @default(now())
-  consumedAt DateTime?
+  id          String     @id @default(cuid())
+  email       String     @unique
+  householdId String?
+  household   Household? @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  consumedAt  DateTime?
+}
+
+// --- Household & membership ---
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model Household {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  members   Member[]
+  invites   Invite[]
+}
+
+// A Member is a single household membership. userId is nullable so a
+// non-login member (e.g. "Mama") can exist without ever having a User
+// account. Someone in two households (e.g. the admin, in both Apartment
+// and Family) has two separate Member rows sharing the same userId.
+model Member {
+  id          String    @id @default(cuid())
+  displayName String
+  role        Role      @default(MEMBER)
+  createdAt   DateTime  @default(now())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([householdId, userId])
 }

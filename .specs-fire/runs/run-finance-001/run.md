@@ -19,17 +19,17 @@ work_items:
   - id: household-member-model
     intent: family-ledger
     mode: confirm
-    status: in_progress
-    current_phase: plan
-    checkpoint_state: none
+    status: completed
+    current_phase: review
+    checkpoint_state: approved
     current_checkpoint: plan
   - id: expense-model
     intent: family-ledger
     mode: confirm
-    status: pending
-    current_phase: null
+    status: in_progress
+    current_phase: plan
     checkpoint_state: none
-    current_checkpoint: null
+    current_checkpoint: plan
   - id: settlement-model
     intent: family-ledger
     mode: confirm
@@ -51,7 +51,7 @@ work_items:
     current_phase: null
     checkpoint_state: none
     current_checkpoint: null
-current_item: household-member-model
+current_item: expense-model
 status: in_progress
 started: 2026-07-22T14:01:16.087Z
 completed: null
@@ -65,15 +65,15 @@ wide (7 work items)
 ## Work Items
 1. **project-scaffold** (confirm) — completed
 2. **auth-setup** (confirm) — completed
-3. **household-member-model** (confirm) — in_progress
-4. **expense-model** (confirm) — pending
+3. **household-member-model** (confirm) — completed
+4. **expense-model** (confirm) — in_progress
 5. **settlement-model** (confirm) — pending
 6. **balance-engine** (validate) — pending
 7. **dashboard-ui** (confirm) — pending
 
 
 ## Current Item
-household-member-model (confirm)
+expense-model (confirm)
 
 ## Files Created
 (none yet)

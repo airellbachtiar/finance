@@ -22,9 +22,25 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user }) {
       if (!user.email) return false
       const allowed = await isInvited(user.email)
-      if (!allowed) return false
-      await consumeInvite(user.email)
+      if (!allowed) {
+        // The Prisma adapter creates the User row before this callback runs,
+        // so an uninvited sign-in attempt would otherwise leave a dangling,
+        // unusable User record behind.
+        if (user.id) {
+          await prisma.user.delete({ where: { id: user.id } }).catch(() => {})
+        }
+        return false
+      }
+      await consumeInvite(user.email, user.id, user.name ?? user.email)
       return true
+    },
+    async jwt({ token, user }) {
+      if (user) token.id = user.id
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user) session.user.id = token.id as string
+      return session
     },
   },
   pages: {
