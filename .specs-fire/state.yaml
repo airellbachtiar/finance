@@ -83,17 +83,18 @@ runs:
         - id: auth-setup
           intent: family-ledger
           mode: confirm
+          status: completed
+          current_phase: review
+          checkpoint_state: approved
+          current_checkpoint: plan
+          completed_at: 2026-07-22T15:20:44.499Z
+        - id: household-member-model
+          intent: family-ledger
+          mode: confirm
           status: in_progress
           current_phase: plan
           checkpoint_state: none
           current_checkpoint: plan
-        - id: household-member-model
-          intent: family-ledger
-          mode: confirm
-          status: pending
-          current_phase: null
-          checkpoint_state: none
-          current_checkpoint: null
         - id: expense-model
           intent: family-ledger
           mode: confirm
@@ -122,6 +123,6 @@ runs:
           current_phase: null
           checkpoint_state: none
           current_checkpoint: null
-      current_item: auth-setup
+      current_item: household-member-model
       started: 2026-07-22T14:01:16.087Z
   completed: []

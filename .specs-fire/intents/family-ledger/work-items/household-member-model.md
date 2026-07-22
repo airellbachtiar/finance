@@ -4,9 +4,10 @@ title: Household and member data model
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: pending
-depends_on: [project-scaffold]
-created: "2026-07-22T00:00:00Z"
+status: in_progress
+depends_on:
+  - project-scaffold
+created: 2026-07-22T00:00:00Z
 ---
 
 # Work Item: Household and member data model

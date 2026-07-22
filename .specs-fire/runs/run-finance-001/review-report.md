@@ -83,7 +83,7 @@ These suggestions were approved and applied (applied directly during execution �
 
 - **File**: `lib/db.ts` (removed), `lib/db.test.ts` (removed)
 - **Description**: Prisma 5 refuses to `generate` a client with zero models defined, so `new PrismaClient()` at module load time would throw at runtime/test time. Removed the premature `lib/db.ts` singleton and its smoke test; added a dependency-free `lib/env.ts` + `lib/env.test.ts` instead to satisfy "Vitest runs a trivial passing test" without a broken import.
-- **Rationale**: Per coding standards, "never log/ship a function that can't actually run." The Prisma client singleton is correctly the `household-member-model` work item's responsibility, once real models exist to generate against.
+- **Rationale**: Per coding standards, "never log/ship a function that can't actually run." The Prisma client singleton is correctly the next work item's responsibility, once real models exist to generate against — see it reinstated below in the `auth-setup` review.
 - **Risk Level**: Low — this is a scope deferral within the same work item, not a new architectural decision; it's flagged here and in `test-report.md` rather than silently absorbed.
 
 ---
@@ -109,3 +109,87 @@ The following project linters were detected and used:
 - `.specs-fire/standards/testing-standards.md`
 - `.specs-fire/standards/tech-stack.md`
 - `.specs-fire/standards/constitution.md`
+
+---
+
+# Code Review Report — auth-setup
+
+**Reviewed**: 2026-07-22T17:25:00Z
+**Files Reviewed**: 13 (incl. `package.json`)
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 0 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 2 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **0** | **2** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `prisma/schema.prisma` (schema)
+- `lib/db.ts` (source, reinstated)
+- `lib/invites.ts` (source)
+- `lib/auth.ts` (source)
+- `app/api/auth/[...nextauth]/route.ts` (source)
+- `app/api/invites/route.ts` (source)
+- `app/invite/page.tsx`, `app/invite/InviteForm.tsx` (source)
+- `app/signin/page.tsx` (source)
+- `app/providers.tsx` (source)
+- `middleware.ts` (source)
+- `lib/invites.test.ts`, `lib/db.test.ts` (test)
+
+## Applied Suggestions
+
+### 1. [Architecture] Middleware didn't respect the custom sign-in page
+
+- **File**: `middleware.ts`
+- **Description**: The bare `export { default } from 'next-auth/middleware'` doesn't read `authOptions.pages.signIn`, so unauthenticated requests were redirected to NextAuth's built-in `/api/auth/signin` instead of the app's own `/signin` page. Caught via manual `curl` verification against a running dev server, not by the automated test suite (this is a routing/UX behavior, not covered by the invite-gating unit tests).
+- **Rationale**: Shipping this would have meant every unauthenticated visitor saw NextAuth's default unstyled sign-in page instead of the app's own — confusing UX and inconsistent with the rest of the app's design.
+- **Risk Level**: Low — mechanical fix (`withAuth({ pages: { signIn: '/signin' } })`), re-verified via `curl` after the change.
+
+## Skipped Suggestions
+
+No suggestions were skipped.
+
+## Project Tooling Used
+
+- **ESLint**: clean, `npx next build` includes lint + type-check, no errors
+- **Prettier**: not run repo-wide
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`
+- `.specs-fire/standards/system-architecture.md`
+- `.specs-fire/standards/constitution.md`
+
+### 2. [Architecture] Missing `prisma generate` on Vercel's build
+
+- **File**: `package.json`
+- **Description**: Production deploy failed with `@prisma/client did not initialize yet` — Vercel's install step never runs `prisma generate` on its own, and the generated client directory is gitignored, so a fresh install on Vercel had no client to import.
+- **Rationale**: Standard Prisma-on-Vercel gap; the fix is a `postinstall` hook so every fresh install (including Vercel's) regenerates the client automatically.
+- **Risk Level**: Low — mechanical, verified by a successful redeploy and a live `curl` against `/api/auth/providers`.
+- **Diff**:
+
+```diff
+   "scripts": {
+     "dev": "next dev",
+     "build": "next build",
+     "start": "next start",
+     "lint": "next lint",
+     "test": "vitest run",
+     "test:watch": "vitest",
+-    "format": "prettier --write ."
++    "format": "prettier --write .",
++    "postinstall": "prisma generate"
+   },
+```
+
+## Security Note
+
+`GOOGLE_CLIENT_SECRET`, the Neon `DATABASE_URL`, and the Gmail app password all live only in `.env.local` (gitignored) and Vercel's encrypted environment variables — confirmed via `git status`/`git check-ignore` that none are present in tracked files.
