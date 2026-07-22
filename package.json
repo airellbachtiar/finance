@@ -20,7 +20,8 @@
     "next-auth": "^4.24.7",
     "@next-auth/prisma-adapter": "^1.0.7",
     "nodemailer": "^7.0.7",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "next-themes": "^0.4.6"
   },
   "devDependencies": {
     "typescript": "^5",

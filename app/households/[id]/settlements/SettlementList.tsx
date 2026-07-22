@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -26,12 +27,22 @@ export function SettlementList({
   isAdmin: boolean
 }) {
   const router = useRouter()
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
-  async function remove(settlementId: string) {
-    const res = await fetch(`/api/households/${householdId}/settlements/${settlementId}`, {
+  async function remove(settlement: SettlementRow) {
+    if (
+      !window.confirm(
+        `Delete this settlement (${settlement.fromMember.displayName} → ${settlement.toMember.displayName}, €${settlement.convertedAmountEur})?`
+      )
+    ) {
+      return
+    }
+    setRemovingId(settlement.id)
+    const res = await fetch(`/api/households/${householdId}/settlements/${settlement.id}`, {
       method: 'DELETE',
     })
     if (res.ok) router.refresh()
+    setRemovingId(null)
   }
 
   if (settlements.length === 0) {
@@ -59,8 +70,8 @@ export function SettlementList({
             )}
             {isAdmin && (
               <div className="mt-1">
-                <Button variant="danger" onClick={() => remove(s.id)}>
-                  Delete
+                <Button variant="danger" onClick={() => remove(s)} disabled={removingId === s.id}>
+                  {removingId === s.id ? 'Deleting…' : 'Delete'}
                 </Button>
               </div>
             )}
@@ -104,8 +115,8 @@ export function SettlementList({
                 <td className="p-3 text-neutral-500 dark:text-neutral-400">{s.notes ?? ''}</td>
                 {isAdmin && (
                   <td className="p-3">
-                    <Button variant="danger" onClick={() => remove(s.id)}>
-                      Delete
+                    <Button variant="danger" onClick={() => remove(s)} disabled={removingId === s.id}>
+                      {removingId === s.id ? 'Deleting…' : 'Delete'}
                     </Button>
                   </td>
                 )}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -25,12 +26,16 @@ export function ExpenseList({
   expenses: ExpenseRow[]
 }) {
   const router = useRouter()
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
-  async function remove(expenseId: string) {
-    const res = await fetch(`/api/households/${householdId}/expenses/${expenseId}`, {
+  async function remove(expense: ExpenseRow) {
+    if (!window.confirm(`Delete "${expense.category}" (€${expense.convertedAmountEur})?`)) return
+    setRemovingId(expense.id)
+    const res = await fetch(`/api/households/${householdId}/expenses/${expense.id}`, {
       method: 'DELETE',
     })
     if (res.ok) router.refresh()
+    setRemovingId(null)
   }
 
   if (expenses.length === 0) {
@@ -63,8 +68,8 @@ export function ExpenseList({
               </p>
             )}
             <div className="mt-1">
-              <Button variant="danger" onClick={() => remove(e.id)}>
-                Delete
+              <Button variant="danger" onClick={() => remove(e)} disabled={removingId === e.id}>
+                {removingId === e.id ? 'Deleting…' : 'Delete'}
               </Button>
             </div>
           </Card>
@@ -104,8 +109,8 @@ export function ExpenseList({
                   {e.splits.length} member{e.splits.length === 1 ? '' : 's'}
                 </td>
                 <td className="p-3">
-                  <Button variant="danger" onClick={() => remove(e.id)}>
-                    Delete
+                  <Button variant="danger" onClick={() => remove(e)} disabled={removingId === e.id}>
+                    {removingId === e.id ? 'Deleting…' : 'Delete'}
                   </Button>
                 </td>
               </tr>

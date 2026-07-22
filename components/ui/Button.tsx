@@ -18,8 +18,8 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   const base =
     variant === 'danger' || variant === 'ghost'
-      ? 'text-sm font-medium disabled:opacity-50'
-      : 'rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed'
+      ? 'text-sm font-medium disabled:opacity-50 disabled:pointer-events-none'
+      : 'rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 
   return <button className={`${base} ${variantClasses[variant]} ${className}`} {...props} />
 }

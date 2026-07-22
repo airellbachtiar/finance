@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Label } from '@/components/ui/Label'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 type MemberRow = {
@@ -26,8 +27,10 @@ function IbanEditor({
   const [editing, setEditing] = useState(false)
   const [iban, setIban] = useState(member.iban ?? '')
   const [status, setStatus] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   async function save() {
+    setSubmitting(true)
     const res = await fetch(`/api/households/${householdId}/members/${member.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -41,13 +44,14 @@ function IbanEditor({
       const body = await res.json().catch(() => null)
       setStatus(body?.error ?? 'Failed to save IBAN')
     }
+    setSubmitting(false)
   }
 
   if (!editing) {
     return (
       <button
         onClick={() => setEditing(true)}
-        className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+        className="text-left text-xs text-indigo-600 hover:underline dark:text-indigo-400"
       >
         {member.iban ? `IBAN: ${member.iban}` : 'Add IBAN'}
       </button>
@@ -56,15 +60,19 @@ function IbanEditor({
 
   return (
     <div className="flex flex-col gap-1">
+      <Label htmlFor={`iban-${member.id}`} className="text-xs">
+        IBAN
+      </Label>
       <div className="flex gap-2">
         <Input
+          id={`iban-${member.id}`}
           value={iban}
           onChange={(e) => setIban(e.target.value)}
           placeholder="NLxx BANK xxxx xxxx xx"
           className="text-xs"
         />
-        <Button variant="secondary" onClick={save}>
-          Save
+        <Button variant="secondary" onClick={save} disabled={submitting}>
+          {submitting ? 'Saving…' : 'Save'}
         </Button>
       </div>
       {status && <p className="text-xs text-red-600">{status}</p>}
@@ -84,12 +92,16 @@ export function MemberList({
   currentUserId: string
 }) {
   const router = useRouter()
+  const [removingId, setRemovingId] = useState<string | null>(null)
 
-  async function remove(memberId: string) {
+  async function remove(memberId: string, displayName: string) {
+    if (!window.confirm(`Remove ${displayName || 'this member'} from the household?`)) return
+    setRemovingId(memberId)
     const res = await fetch(`/api/households/${householdId}/members/${memberId}`, {
       method: 'DELETE',
     })
     if (res.ok) router.refresh()
+    setRemovingId(null)
   }
 
   if (members.length === 0) {
@@ -111,8 +123,12 @@ export function MemberList({
                 </span>
               </span>
               {isAdmin && (
-                <Button variant="danger" onClick={() => remove(m.id)}>
-                  Remove
+                <Button
+                  variant="danger"
+                  onClick={() => remove(m.id, m.displayName)}
+                  disabled={removingId === m.id}
+                >
+                  {removingId === m.id ? 'Removing…' : 'Remove'}
                 </Button>
               )}
             </div>

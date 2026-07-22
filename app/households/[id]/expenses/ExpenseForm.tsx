@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { Label } from '@/components/ui/Label'
 
 type MemberOption = { id: string; displayName: string }
 
@@ -25,6 +26,7 @@ export function ExpenseForm({
   const [notes, setNotes] = useState('')
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(members.map((m) => m.id))
   const [status, setStatus] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   function toggleMember(id: string) {
     setSelectedMemberIds((prev) =>
@@ -34,6 +36,7 @@ export function ExpenseForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setSubmitting(true)
     const res = await fetch(`/api/households/${householdId}/expenses`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,61 +62,88 @@ export function ExpenseForm({
       const body = await res.json().catch(() => null)
       setStatus(body?.error ?? 'Failed to add expense')
     }
+    setSubmitting(false)
   }
 
   return (
     <Card>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Select value={payerId} onChange={(e) => setPayerId(e.target.value)}>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.displayName}
-              </option>
-            ))}
-          </Select>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          <Input
-            type="text"
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category (e.g. Rent)"
-          />
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="expense-payer">Paid by</Label>
+            <Select id="expense-payer" value={payerId} onChange={(e) => setPayerId(e.target.value)}>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.displayName}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="expense-date">Date</Label>
+            <Input id="expense-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="expense-category">Category</Label>
+            <Input
+              id="expense-category"
+              type="text"
+              required
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. Rent"
+            />
+          </div>
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Select
-            value={originalCurrency}
-            onChange={(e) => setOriginalCurrency(e.target.value)}
-          >
-            <option value="EUR">EUR</option>
-            <option value="IDR">IDR</option>
-          </Select>
-          <Input
-            type="number"
-            step="0.01"
-            required
-            value={originalAmount}
-            onChange={(e) => setOriginalAmount(e.target.value)}
-            placeholder="Amount"
-          />
-          {originalCurrency !== 'EUR' && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="expense-currency">Currency</Label>
+            <Select
+              id="expense-currency"
+              value={originalCurrency}
+              onChange={(e) => setOriginalCurrency(e.target.value)}
+            >
+              <option value="EUR">EUR</option>
+              <option value="IDR">IDR</option>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="expense-amount">Amount</Label>
             <Input
+              id="expense-amount"
               type="number"
-              step="0.000001"
+              step="0.01"
               required
-              value={exchangeRate}
-              onChange={(e) => setExchangeRate(e.target.value)}
-              placeholder={`1 EUR = ? ${originalCurrency}`}
+              value={originalAmount}
+              onChange={(e) => setOriginalAmount(e.target.value)}
+              placeholder="0.00"
             />
+          </div>
+          {originalCurrency !== 'EUR' && (
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="expense-rate">Exchange rate</Label>
+              <Input
+                id="expense-rate"
+                type="number"
+                step="0.000001"
+                required
+                value={exchangeRate}
+                onChange={(e) => setExchangeRate(e.target.value)}
+                placeholder={`1 EUR = ? ${originalCurrency}`}
+              />
+            </div>
           )}
         </div>
-        <Input
-          type="text"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes (optional)"
-        />
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="expense-notes">Notes</Label>
+          <Input
+            id="expense-notes"
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optional"
+          />
+        </div>
         <fieldset className="flex flex-col gap-1">
           <legend className="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
             Split equally between:
@@ -136,7 +166,9 @@ export function ExpenseForm({
           </div>
         </fieldset>
         <div>
-          <Button type="submit">Add expense</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Adding…' : 'Add expense'}
+          </Button>
         </div>
         {status && <p className="text-sm text-red-600">{status}</p>}
       </form>

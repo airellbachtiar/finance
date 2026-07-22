@@ -46,6 +46,7 @@ export function BalanceSummary({
   const router = useRouter()
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [copied, setCopied] = useState<string | null>(null)
+  const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const nameOf = (id: string) => members.find((m) => m.id === id)?.displayName ?? '(unknown)'
 
   function toggle(index: number) {
@@ -64,6 +65,15 @@ export function BalanceSummary({
   }
 
   async function markAsPaid(b: Balance) {
+    const key = `${b.debtorMemberId}-${b.creditorMemberId}`
+    if (
+      !window.confirm(
+        `Record that ${nameOf(b.debtorMemberId)} paid ${nameOf(b.creditorMemberId)} €${b.amountEur}?`
+      )
+    ) {
+      return
+    }
+    setMarkingPaid(key)
     const res = await fetch(`/api/households/${householdId}/settlements`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -77,6 +87,7 @@ export function BalanceSummary({
       }),
     })
     if (res.ok) router.refresh()
+    setMarkingPaid(null)
   }
 
   if (balances.length === 0) {
@@ -156,7 +167,14 @@ export function BalanceSummary({
                       Reference: {b.paymentDetails.reference}
                     </p>
                     <div className="mt-1">
-                      <Button onClick={() => markAsPaid(b)}>Mark as paid</Button>
+                      <Button
+                        onClick={() => markAsPaid(b)}
+                        disabled={markingPaid === `${b.debtorMemberId}-${b.creditorMemberId}`}
+                      >
+                        {markingPaid === `${b.debtorMemberId}-${b.creditorMemberId}`
+                          ? 'Recording…'
+                          : 'Mark as paid'}
+                      </Button>
                     </div>
                   </div>
                 </div>
