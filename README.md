@@ -1,6 +1,6 @@
-# Family Ledger
+# Bachtiar Ledger
 
-A shared ledger web app that answers one question: **who owes who, and why.**
+No more "did you pay me back?" texts. A shared ledger web app that answers one question: **who owes who, and why.**
 
 Not a budgeting app — it never stores or lets anyone edit a balance directly. Every balance is derived from a recorded history of expenses and settlements across two households:
 
@@ -44,4 +44,4 @@ npm run test:watch  # watch mode
 
 ## Deployment
 
-Deployed on [Vercel](https://vercel.com), auto-deploying from `main`. `DATABASE_URL` (and later, auth secrets) are set as Vercel project environment variables — never committed.
+Live at [airell.moe](https://airell.moe), deployed on [Vercel](https://vercel.com), auto-deploying from `main`. `DATABASE_URL` and auth secrets are set as Vercel project environment variables — never committed.

@@ -50,10 +50,10 @@ export default function SignInPage() {
 
       <div className="text-center">
         <h1 className="text-3xl font-semibold text-neutral-900 dark:text-neutral-100">
-          Family Ledger
+          Bachtiar Ledger
         </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Who owes who, and why.
+          No more &quot;did you pay me back?&quot; texts. Who owes who, and why.
         </p>
       </div>
 

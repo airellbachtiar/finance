@@ -14,9 +14,15 @@ export function AppHeader() {
   return (
     <header className="flex w-full items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3 sm:px-6 sm:py-4 dark:border-neutral-800">
       <Link href="/households" className="shrink-0 text-lg font-semibold">
-        Family Ledger
+        Bachtiar Ledger
       </Link>
       <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <Link
+          href="/tutorial"
+          className="shrink-0 text-sm text-neutral-500 hover:text-indigo-600 dark:text-neutral-400 dark:hover:text-indigo-400"
+        >
+          How it works
+        </Link>
         <ThemeToggle />
         {session?.user && (
           <div className="flex min-w-0 items-center gap-2 text-sm text-neutral-500 sm:gap-4 dark:text-neutral-400">

@@ -46,7 +46,7 @@ export function SettlementList({
   }
 
   if (settlements.length === 0) {
-    return <EmptyState>No settlements yet.</EmptyState>
+    return <EmptyState>No settlements yet — once someone pays up, record it here.</EmptyState>
   }
 
   return (

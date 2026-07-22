@@ -39,7 +39,7 @@ export function ExpenseList({
   }
 
   if (expenses.length === 0) {
-    return <EmptyState>No expenses yet.</EmptyState>
+    return <EmptyState>No expenses logged yet — add the first one below.</EmptyState>
   }
 
   return (

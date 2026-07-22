@@ -21,10 +21,12 @@ export default async function HouseholdsPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 p-4 sm:gap-8 sm:p-8">
-      <PageHeader title="Your households" />
+      <PageHeader title="Your households" subtitle="Pick one to see who owes who." />
 
       {households.length === 0 ? (
-        <EmptyState>No households yet — create your first one below.</EmptyState>
+        <EmptyState>
+          No households yet. Start one below — Apartment, Family, whatever fits.
+        </EmptyState>
       ) : (
         <div className="grid w-full max-w-2xl gap-3 sm:grid-cols-2">
           {households.map((h) => (

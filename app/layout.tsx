@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Family Ledger",
-  description: "Who owes who, and why.",
+  title: "Bachtiar Ledger",
+  description: "No more \"did you pay me back?\" texts. Who owes who, and why — settled in seconds.",
 };
 
 export default function RootLayout({
