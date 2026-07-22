@@ -4,9 +4,10 @@ title: Settlement recording (transfers between members)
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: pending
-depends_on: [household-member-model]
-created: "2026-07-22T00:00:00Z"
+status: in_progress
+depends_on:
+  - household-member-model
+created: 2026-07-22T00:00:00Z
 ---
 
 # Work Item: Settlement recording (transfers between members)

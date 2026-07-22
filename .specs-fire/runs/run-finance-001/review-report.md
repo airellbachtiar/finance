@@ -261,3 +261,56 @@ No suggestions were skipped.
 - `.specs-fire/standards/coding-standards.md`
 - `.specs-fire/standards/testing-standards.md`
 - `.specs-fire/standards/system-architecture.md`
+
+---
+
+# Code Review Report — expense-model
+
+**Reviewed**: 2026-07-22T17:55:00Z
+**Files Reviewed**: 11
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 1 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 0 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **1** | **0** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `prisma/schema.prisma` (schema)
+- `lib/currency.ts`, `lib/currency.test.ts` (source, test)
+- `lib/expenses.ts`, `lib/expenses.test.ts` (source, test)
+- `app/api/households/[id]/expenses/route.ts`, `app/api/households/[id]/expenses/[expenseId]/route.ts` (source)
+- `app/households/[id]/expenses/page.tsx`, `ExpenseForm.tsx`, `ExpenseList.tsx` (source)
+- `app/households/[id]/page.tsx` (modified — added link)
+
+## Auto-Fixed Issues
+
+### 1. [Code Quality] Leftover debug filler in first `expenses.test.ts` draft
+
+- **File**: `lib/expenses.test.ts`
+- **Description**: An early draft of the "splits equally" test computed an unused `total` via a convoluted `shareEur.minus(shareEur)` zero-Decimal trick and threw away the two unused-variable member fixtures with `void b; void c`. Rewrote to actually assert the total sums to `100` using `new Prisma.Decimal(0)` as the reduce seed, and dropped the unused `void` statements.
+- **Diff**: see the test file — replaced the dead code with a real assertion rather than just deleting it, since "splits sum to the exact total" is a genuinely valuable thing to verify.
+
+## Applied Suggestions
+
+None needed this time — no architectural surprises like the previous two work items.
+
+## Skipped Suggestions
+
+No suggestions were skipped.
+
+## Project Tooling Used
+
+- **ESLint**/**TypeScript**: clean via `next build`
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`

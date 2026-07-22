@@ -159,4 +159,54 @@ Cross-household leakage prevention (an acceptance criterion) isn't fully enforce
 - UI stays plain/utilitarian (forms, no styling polish) — same bar as `auth-setup`'s sign-in/invite pages.
 
 ---
+*Plan approved at checkpoint. Execution follows.*
+
+---
+
+## Work Item: expense-model
+
+### Approach
+
+`Expense` (household, payer, date, category, notes, original currency/amount, exchange rate, converted EUR amount) + `ExpenseSplit` (per-member share, in EUR). Amounts use Prisma's `Decimal` type throughout, not floats — money math needs exact decimal arithmetic, not binary floating point, and this is the data the future `balance-engine` will read directly, so precision has to be right at the source.
+
+**Default split decision**: rather than storing a "default split percentage" on `Household`/`Member` (a new concept), the default is computed dynamically — equal division among all *current* members of the household at the time the expense is created. This matches every example in the spec (equal 33.3/33.3/33.3 is just "equal division among 3 members") without adding a redundant stored value that could drift out of sync with actual membership. Per-expense override is supported by passing an explicit subset of member IDs (covers "one brother was away — split between just the other two") or, at the API level, fully explicit per-member amounts for future flexibility.
+
+**Rounding**: equal splits won't always divide evenly (€100 / 3 = 33.33/33.33/33.34). Splits are computed in integer cents with the leftover remainder distributed one cent at a time starting from the first member, guaranteeing the splits always sum *exactly* to the converted total — no silent rounding drift.
+
+**UI scope cut**: the add-expense form supports the equal-split-with-member-subset flow (covers the spec's actual examples) but not a full custom-per-member-amount input UI — that's exposed at the API/`lib` level (tested) for future use (e.g. a future dashboard editing flow) but not built into this pass's form, to keep this work item's UI scope proportionate. Editing an expense is supported at the API/lib level (tested) but the UI only exposes create + delete for now — full edit UI is a small follow-up, not core to the MVP's "who owes who" question.
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `lib/currency.ts` | `convertToEur(amount, currency, rate)` — throws if a non-EUR amount has no rate |
+| `lib/expenses.ts` | `createExpense`, `updateExpense`, `deleteExpense`, equal-split-with-remainder-distribution logic |
+| `app/api/households/[id]/expenses/route.ts` | `GET` list expenses (any member), `POST` create (any member) |
+| `app/api/households/[id]/expenses/[expenseId]/route.ts` | `PATCH` update, `DELETE` remove (any member — small trusted household, not admin-gated like membership changes) |
+| `app/households/[id]/expenses/page.tsx` + `ExpenseForm.tsx` | List expenses (date, category, payer, original + converted amount, split breakdown), add-expense form |
+| `lib/currency.test.ts` | EUR passthrough; non-EUR conversion; throws without a rate |
+| `lib/expenses.test.ts` | Equal split among all members; equal split among an explicit subset; explicit splits validated to sum exactly; rejects mismatched explicit splits; update recomputes conversion/splits; delete cascades its splits |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `prisma/schema.prisma` | Add `Expense`, `ExpenseSplit`; back-relations on `Household`/`Member` |
+| `app/households/[id]/page.tsx` | Link to the household's expenses page |
+
+### Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `lib/currency.test.ts` | EUR amount passes through unchanged; IDR amount converts using the given rate; missing rate for non-EUR throws |
+| `lib/expenses.test.ts` | Default equal split across all members (including the remainder-cent case, e.g. €100/3); subset override; explicit splits that sum correctly are accepted; explicit splits that don't sum correctly are rejected; editing an expense recomputes everything; deleting removes its splits too |
+
+## Technical Details
+
+- `Expense.originalAmount`/`convertedAmountEur` are `Decimal(14, 2)`; `exchangeRate` is `Decimal(14, 6)` (nullable — required only for non-EUR).
+- `ExpenseSplit.shareEur` is `Decimal(14, 2)`, one row per member, `@@unique([expenseId, memberId])`.
+- Any household member (not just admins) can add/edit/delete expenses — this is a small trusted-family tool, and gating expense entry behind admin status would just create friction for the actual use case (a brother logging groceries he paid for).
+- "No caching of stale split data" is trivially satisfied right now — there's no cache anywhere in the codebase yet; the future `balance-engine` will read `Expense`/`ExpenseSplit` directly from Postgres on every computation.
+
+---
 *Plan pending approval.*

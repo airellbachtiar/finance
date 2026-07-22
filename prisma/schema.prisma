@@ -76,11 +76,12 @@ enum Role {
 }
 
 model Household {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   members   Member[]
   invites   Invite[]
+  expenses  Expense[]
 }
 
 // A Member is a single household membership. userId is nullable so a
@@ -97,5 +98,42 @@ model Member {
   userId      String?
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  expensesPaid  Expense[]      @relation("ExpensePayer")
+  expenseSplits ExpenseSplit[]
+
   @@unique([householdId, userId])
+}
+
+// --- Expenses ---
+// Every expense stores its original currency/amount alongside the EUR
+// conversion — the original is never discarded even when currency == EUR
+// (exchangeRate is then null and convertedAmountEur == originalAmount).
+model Expense {
+  id                 String         @id @default(cuid())
+  householdId        String
+  household          Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  payerId            String
+  payer              Member         @relation("ExpensePayer", fields: [payerId], references: [id])
+  date               DateTime
+  category           String
+  notes              String?
+  originalCurrency   String
+  originalAmount     Decimal        @db.Decimal(14, 2)
+  exchangeRate       Decimal?       @db.Decimal(14, 6)
+  convertedAmountEur Decimal        @db.Decimal(14, 2)
+  createdAt          DateTime       @default(now())
+  splits             ExpenseSplit[]
+}
+
+// One row per member sharing an expense; shareEur values for a given
+// expense always sum exactly to that expense's convertedAmountEur.
+model ExpenseSplit {
+  id        String  @id @default(cuid())
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member  @relation(fields: [memberId], references: [id])
+  shareEur  Decimal @db.Decimal(14, 2)
+
+  @@unique([expenseId, memberId])
 }

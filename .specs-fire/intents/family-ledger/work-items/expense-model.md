@@ -4,10 +4,12 @@ title: Expense model with splits and currency conversion
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: in_progress
+status: completed
 depends_on:
   - household-member-model
 created: 2026-07-22T00:00:00Z
+run_id: run-finance-001
+completed_at: 2026-07-22T15:48:15.402Z
 ---
 
 # Work Item: Expense model with splits and currency conversion

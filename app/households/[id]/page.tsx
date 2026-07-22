@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -43,6 +44,9 @@ export default async function HouseholdPage({ params }: { params: { id: string }
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 p-8">
       <h1 className="text-xl font-semibold">{household.name}</h1>
+      <Link href={`/households/${household.id}/expenses`} className="underline">
+        View expenses
+      </Link>
       <MemberList householdId={household.id} members={household.members} isAdmin={admin} />
       {admin && <MemberForm householdId={household.id} />}
     </main>
