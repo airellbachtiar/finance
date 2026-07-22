@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Label } from '@/components/ui/Label'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { InAppBrowserWarning } from '@/components/InAppBrowserWarning'
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
@@ -55,6 +56,8 @@ export default function SignInPage() {
           Who owes who, and why.
         </p>
       </div>
+
+      <InAppBrowserWarning />
 
       <Card className="flex w-full max-w-sm flex-col gap-4">
         <Suspense fallback={null}>
