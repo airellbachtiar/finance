@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { isHouseholdMember } from '@/lib/households'
 import { NotAuthorized } from '@/components/ui/NotAuthorized'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
 
@@ -32,8 +33,11 @@ export default async function ExpensesPage({ params }: { params: { id: string } 
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-8 p-8">
-      <PageHeader title={`${household.name} — Expenses`} />
+    <main className="flex min-h-screen flex-col items-center gap-6 p-4 sm:gap-8 sm:p-8">
+      <div className="w-full max-w-2xl">
+        <BackLink href={`/households/${household.id}`} label={household.name} />
+      </div>
+      <PageHeader title="Expenses" />
       <div className="w-full max-w-2xl">
         <ExpenseList
           householdId={household.id}

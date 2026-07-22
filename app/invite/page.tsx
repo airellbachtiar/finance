@@ -12,7 +12,7 @@ export default async function InvitePage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-8 p-8">
+    <main className="flex min-h-screen flex-col items-center gap-6 p-4 sm:gap-8 sm:p-8">
       <PageHeader title="Invite a member" subtitle="Approve an email to create an account." />
       <InviteForm />
     </main>

@@ -7,6 +7,7 @@ import {
   inviteMember,
   addNonLoginMember,
   removeMember,
+  setMemberIban,
 } from './households'
 
 const createdHouseholdIds: string[] = []
@@ -76,5 +77,54 @@ describe('households', () => {
     const membersOfA = await prisma.member.findMany({ where: { householdId: householdA.id } })
     expect(membersOfA.every((m) => m.householdId === householdA.id)).toBe(true)
     expect(membersOfA.some((m) => m.householdId === householdB.id)).toBe(false)
+  })
+
+  describe('setMemberIban', () => {
+    it('lets a login member set their own IBAN, stored on User', async () => {
+      const user = await makeUser('vitest-iban-1@example.com')
+      const household = await createHousehold('Apartment', user.id, 'You')
+      createdHouseholdIds.push(household.id)
+      const you = household.members[0]
+
+      await setMemberIban(you.id, 'NL91ABNA0417164300', user.id, false)
+
+      const updatedUser = await prisma.user.findUnique({ where: { id: user.id } })
+      expect(updatedUser?.iban).toBe('NL91ABNA0417164300')
+    })
+
+    it('refuses to let a login member set someone else\'s IBAN', async () => {
+      const user = await makeUser('vitest-iban-2@example.com')
+      const otherUser = await makeUser('vitest-iban-2b@example.com')
+      const household = await createHousehold('Apartment', user.id, 'You')
+      createdHouseholdIds.push(household.id)
+      const you = household.members[0]
+
+      await expect(
+        setMemberIban(you.id, 'NL91ABNA0417164300', otherUser.id, false)
+      ).rejects.toThrow('Only the account owner')
+    })
+
+    it('lets an admin set a non-login member\'s IBAN, stored on Member', async () => {
+      const user = await makeUser('vitest-iban-3@example.com')
+      const household = await createHousehold('Family', user.id, 'Admin')
+      createdHouseholdIds.push(household.id)
+      const mama = await addNonLoginMember(household.id, 'Mama')
+
+      await setMemberIban(mama.id, 'NL02ABNA0123456789', user.id, true)
+
+      const updatedMama = await prisma.member.findUnique({ where: { id: mama.id } })
+      expect(updatedMama?.iban).toBe('NL02ABNA0123456789')
+    })
+
+    it('refuses to let a non-admin set a non-login member\'s IBAN', async () => {
+      const user = await makeUser('vitest-iban-4@example.com')
+      const household = await createHousehold('Family', user.id, 'Admin')
+      createdHouseholdIds.push(household.id)
+      const mama = await addNonLoginMember(household.id, 'Mama')
+
+      await expect(setMemberIban(mama.id, 'NL02ABNA0123456789', user.id, false)).rejects.toThrow(
+        'Only an admin'
+      )
+    })
   })
 })

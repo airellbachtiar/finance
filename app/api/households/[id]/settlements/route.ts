@@ -31,12 +31,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const body = await req.json()
+
   const isAdmin = await isHouseholdAdmin(session.user.id, params.id)
   if (!isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Not an admin — still allow self-attested "I paid my own debt"
+    // settlements (e.g. the dashboard's "mark as paid" flow), since that's
+    // low-risk compared to recording someone *else's* payment on their
+    // behalf. Admins remain the only ones who can edit/delete afterward.
+    const ownMember = await prisma.member.findUnique({
+      where: { householdId_userId: { householdId: params.id, userId: session.user.id } },
+    })
+    if (!ownMember || ownMember.id !== body.fromMemberId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
   }
-
-  const body = await req.json()
 
   try {
     const settlement = await createSettlement({

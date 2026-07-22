@@ -15,6 +15,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  iban          String?
   accounts      Account[]
   sessions      Session[]
   members       Member[]
@@ -98,6 +99,9 @@ model Member {
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
   userId      String?
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // Only used for non-login members (no User to hang an IBAN off of).
+  // Login members' IBAN lives on User instead, shared across households.
+  iban        String?
 
   expensesPaid    Expense[]      @relation("ExpensePayer")
   expenseSplits   ExpenseSplit[]

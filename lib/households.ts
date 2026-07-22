@@ -54,6 +54,36 @@ export async function addNonLoginMember(householdId: string, displayName: string
   })
 }
 
+/**
+ * Sets a member's IBAN. Login members store it on their User (shared
+ * across every household they're in, since it's their own bank account,
+ * not household-specific) and can only set their own. Non-login members
+ * store it directly on the Member record, settable only by an admin of
+ * that household (mirrors who's allowed to add/remove them).
+ */
+export async function setMemberIban(
+  memberId: string,
+  iban: string | null,
+  requesterUserId: string,
+  requesterIsAdmin: boolean
+) {
+  const member = await prisma.member.findUnique({ where: { id: memberId } })
+  if (!member) throw new Error('Member not found')
+
+  if (member.userId) {
+    if (member.userId !== requesterUserId) {
+      throw new Error('Only the account owner can set their own IBAN')
+    }
+    await prisma.user.update({ where: { id: member.userId }, data: { iban } })
+    return
+  }
+
+  if (!requesterIsAdmin) {
+    throw new Error('Only an admin can set a non-login member’s IBAN')
+  }
+  await prisma.member.update({ where: { id: memberId }, data: { iban } })
+}
+
 export async function removeMember(memberId: string) {
   const member = await prisma.member.findUnique({ where: { id: memberId } })
   if (!member) return

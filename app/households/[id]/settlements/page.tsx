@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { isHouseholdAdmin, isHouseholdMember } from '@/lib/households'
 import { NotAuthorized } from '@/components/ui/NotAuthorized'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { BackLink } from '@/components/ui/BackLink'
 import { SettlementForm } from './SettlementForm'
 import { SettlementList } from './SettlementList'
 
@@ -33,8 +34,11 @@ export default async function SettlementsPage({ params }: { params: { id: string
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-8 p-8">
-      <PageHeader title={`${household.name} — Settlements`} />
+    <main className="flex min-h-screen flex-col items-center gap-6 p-4 sm:gap-8 sm:p-8">
+      <div className="w-full max-w-2xl">
+        <BackLink href={`/households/${household.id}`} label={household.name} />
+      </div>
+      <PageHeader title="Settlements" />
       <div className="w-full max-w-2xl">
         <SettlementList
           householdId={household.id}
