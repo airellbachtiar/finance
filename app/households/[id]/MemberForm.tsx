@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 
 export function MemberForm({ householdId }: { householdId: string }) {
   const router = useRouter()
@@ -38,32 +41,32 @@ export function MemberForm({ householdId }: { householdId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <form onSubmit={invite} className="flex gap-2">
-        <input
+    <Card className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+      <form onSubmit={invite} className="flex flex-1 gap-2">
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Invite by email (login member)"
-          className="rounded border px-3 py-2 text-black"
+          placeholder="Invite by email"
+          className="flex-1"
         />
-        <button type="submit" className="rounded bg-black px-4 py-2 text-white">
+        <Button type="submit" variant="secondary">
           Invite
-        </button>
+        </Button>
       </form>
-      <form onSubmit={addNonLogin} className="flex gap-2">
-        <input
+      <form onSubmit={addNonLogin} className="flex flex-1 gap-2">
+        <Input
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="Add non-login member (e.g. Mama)"
-          className="rounded border px-3 py-2 text-black"
+          className="flex-1"
         />
-        <button type="submit" className="rounded border px-4 py-2">
+        <Button type="submit" variant="secondary">
           Add
-        </button>
+        </Button>
       </form>
-      {status && <p className="text-sm">{status}</p>}
-    </div>
+      {status && <p className="text-sm text-neutral-500 dark:text-neutral-400">{status}</p>}
+    </Card>
   )
 }

@@ -5,6 +5,9 @@ import { prisma } from '@/lib/db'
 import { isHouseholdAdmin, isHouseholdMember } from '@/lib/households'
 import { getHouseholdBalances } from '@/lib/balance-engine'
 import { getPairHistory } from '@/lib/dashboard'
+import { NotAuthorized } from '@/components/ui/NotAuthorized'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { MemberForm } from './MemberForm'
 import { MemberList } from './MemberList'
 import { BalanceSummary } from './BalanceSummary'
@@ -12,20 +15,12 @@ import { BalanceSummary } from './BalanceSummary'
 export default async function HouseholdPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Not authorized.</p>
-      </main>
-    )
+    return <NotAuthorized />
   }
 
   const member = await isHouseholdMember(session.user.id, params.id)
   if (!member) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Not authorized.</p>
-      </main>
-    )
+    return <NotAuthorized />
   }
 
   const [household, admin, balances, otherHouseholds] = await Promise.all([
@@ -41,11 +36,7 @@ export default async function HouseholdPage({ params }: { params: { id: string }
   ])
 
   if (!household) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Household not found.</p>
-      </main>
-    )
+    return <NotAuthorized message="Household not found." />
   }
 
   const balancesWithHistory = await Promise.all(
@@ -57,35 +48,52 @@ export default async function HouseholdPage({ params }: { params: { id: string }
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 p-8">
-      <h1 className="text-xl font-semibold">{household.name}</h1>
+      <PageHeader
+        title={household.name}
+        actions={
+          <>
+            <Link href={`/households/${household.id}/expenses`}>
+              <Button variant="secondary">Expenses</Button>
+            </Link>
+            <Link href={`/households/${household.id}/settlements`}>
+              <Button variant="secondary">Settlements</Button>
+            </Link>
+          </>
+        }
+      />
 
       {otherHouseholds.length > 0 && (
-        <div className="flex gap-3 text-sm text-neutral-500">
+        <div className="flex w-full max-w-2xl items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
           <span>Switch to:</span>
           {otherHouseholds.map((h) => (
-            <Link key={h.id} href={`/households/${h.id}`} className="underline">
+            <Link
+              key={h.id}
+              href={`/households/${h.id}`}
+              className="text-indigo-600 hover:underline dark:text-indigo-400"
+            >
               {h.name}
             </Link>
           ))}
         </div>
       )}
 
-      <div className="flex gap-4">
-        <Link href={`/households/${household.id}/expenses`} className="underline">
-          View expenses
-        </Link>
-        <Link href={`/households/${household.id}/settlements`} className="underline">
-          View settlements
-        </Link>
-      </div>
+      <section className="flex w-full max-w-2xl flex-col gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          Balances
+        </h2>
+        <BalanceSummary
+          balances={JSON.parse(JSON.stringify(balancesWithHistory))}
+          members={household.members}
+        />
+      </section>
 
-      <BalanceSummary
-        balances={JSON.parse(JSON.stringify(balancesWithHistory))}
-        members={household.members}
-      />
-
-      <MemberList householdId={household.id} members={household.members} isAdmin={admin} />
-      {admin && <MemberForm householdId={household.id} />}
+      <section className="flex w-full max-w-2xl flex-col gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          Members
+        </h2>
+        <MemberList householdId={household.id} members={household.members} isAdmin={admin} />
+        {admin && <MemberForm householdId={household.id} />}
+      </section>
     </main>
   )
 }

@@ -1,6 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type SettlementRow = {
   id: string
@@ -32,43 +35,54 @@ export function SettlementList({
   }
 
   if (settlements.length === 0) {
-    return <p className="text-neutral-500">No settlements yet.</p>
+    return <EmptyState>No settlements yet.</EmptyState>
   }
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b">
-          <th className="p-2">Date</th>
-          <th className="p-2">From</th>
-          <th className="p-2">To</th>
-          <th className="p-2">Amount</th>
-          <th className="p-2">EUR</th>
-          <th className="p-2">Notes</th>
-          {isAdmin && <th className="p-2"></th>}
-        </tr>
-      </thead>
-      <tbody>
-        {settlements.map((s) => (
-          <tr key={s.id} className="border-b">
-            <td className="p-2">{new Date(s.date).toLocaleDateString()}</td>
-            <td className="p-2">{s.fromMember.displayName}</td>
-            <td className="p-2">{s.toMember.displayName}</td>
-            <td className="p-2">
-              {s.originalAmount} {s.originalCurrency}
-            </td>
-            <td className="p-2">€{s.convertedAmountEur}</td>
-            <td className="p-2">{s.notes ?? ''}</td>
-            {isAdmin && (
-              <td className="p-2">
-                <button onClick={() => remove(s.id)} className="text-red-600 underline">
-                  Delete
-                </button>
-              </td>
-            )}
+    <Card className="overflow-x-auto p-0">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-neutral-200 text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+            <th className="p-3 font-medium">Date</th>
+            <th className="p-3 font-medium">From</th>
+            <th className="p-3 font-medium">To</th>
+            <th className="p-3 font-medium">Amount</th>
+            <th className="p-3 font-medium">EUR</th>
+            <th className="p-3 font-medium">Notes</th>
+            {isAdmin && <th className="p-3"></th>}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {settlements.map((s) => (
+            <tr
+              key={s.id}
+              className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+            >
+              <td className="p-3 text-neutral-500 dark:text-neutral-400">
+                {new Date(s.date).toLocaleDateString()}
+              </td>
+              <td className="p-3 text-neutral-900 dark:text-neutral-100">
+                {s.fromMember.displayName}
+              </td>
+              <td className="p-3 text-neutral-900 dark:text-neutral-100">
+                {s.toMember.displayName}
+              </td>
+              <td className="p-3">
+                {s.originalAmount} {s.originalCurrency}
+              </td>
+              <td className="p-3 font-medium">€{s.convertedAmountEur}</td>
+              <td className="p-3 text-neutral-500 dark:text-neutral-400">{s.notes ?? ''}</td>
+              {isAdmin && (
+                <td className="p-3">
+                  <Button variant="danger" onClick={() => remove(s.id)}>
+                    Delete
+                  </Button>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
   )
 }

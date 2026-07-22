@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 
 export function InviteForm() {
   const [email, setEmail] = useState('')
@@ -18,21 +21,18 @@ export function InviteForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 items-center">
-      <div className="flex gap-2">
-        <input
+    <Card className="w-full max-w-sm">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <Input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email@example.com"
-          className="rounded border px-3 py-2 text-black"
         />
-        <button type="submit" className="rounded bg-black px-4 py-2 text-white">
-          Invite
-        </button>
-      </div>
-      {status && <p className="text-sm">{status}</p>}
-    </form>
+        <Button type="submit">Invite</Button>
+        {status && <p className="text-sm text-neutral-500 dark:text-neutral-400">{status}</p>}
+      </form>
+    </Card>
   )
 }

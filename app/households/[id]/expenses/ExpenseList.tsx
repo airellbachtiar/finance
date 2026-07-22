@@ -1,6 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type ExpenseRow = {
   id: string
@@ -31,41 +34,50 @@ export function ExpenseList({
   }
 
   if (expenses.length === 0) {
-    return <p className="text-neutral-500">No expenses yet.</p>
+    return <EmptyState>No expenses yet.</EmptyState>
   }
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b">
-          <th className="p-2">Date</th>
-          <th className="p-2">Category</th>
-          <th className="p-2">Paid by</th>
-          <th className="p-2">Amount</th>
-          <th className="p-2">EUR</th>
-          <th className="p-2">Split</th>
-          <th className="p-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {expenses.map((e) => (
-          <tr key={e.id} className="border-b">
-            <td className="p-2">{new Date(e.date).toLocaleDateString()}</td>
-            <td className="p-2">{e.category}</td>
-            <td className="p-2">{e.payer.displayName}</td>
-            <td className="p-2">
-              {e.originalAmount} {e.originalCurrency}
-            </td>
-            <td className="p-2">€{e.convertedAmountEur}</td>
-            <td className="p-2">{e.splits.length} member(s)</td>
-            <td className="p-2">
-              <button onClick={() => remove(e.id)} className="text-red-600 underline">
-                Delete
-              </button>
-            </td>
+    <Card className="overflow-x-auto p-0">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-neutral-200 text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+            <th className="p-3 font-medium">Date</th>
+            <th className="p-3 font-medium">Category</th>
+            <th className="p-3 font-medium">Paid by</th>
+            <th className="p-3 font-medium">Amount</th>
+            <th className="p-3 font-medium">EUR</th>
+            <th className="p-3 font-medium">Split</th>
+            <th className="p-3"></th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {expenses.map((e) => (
+            <tr
+              key={e.id}
+              className="border-b border-neutral-100 last:border-0 dark:border-neutral-800"
+            >
+              <td className="p-3 text-neutral-500 dark:text-neutral-400">
+                {new Date(e.date).toLocaleDateString()}
+              </td>
+              <td className="p-3 text-neutral-900 dark:text-neutral-100">{e.category}</td>
+              <td className="p-3">{e.payer.displayName}</td>
+              <td className="p-3">
+                {e.originalAmount} {e.originalCurrency}
+              </td>
+              <td className="p-3 font-medium">€{e.convertedAmountEur}</td>
+              <td className="p-3 text-neutral-500 dark:text-neutral-400">
+                {e.splits.length} member{e.splits.length === 1 ? '' : 's'}
+              </td>
+              <td className="p-3">
+                <Button variant="danger" onClick={() => remove(e.id)}>
+                  Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
   )
 }

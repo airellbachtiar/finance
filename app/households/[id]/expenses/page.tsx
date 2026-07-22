@@ -2,26 +2,20 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isHouseholdMember } from '@/lib/households'
+import { NotAuthorized } from '@/components/ui/NotAuthorized'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { ExpenseForm } from './ExpenseForm'
 import { ExpenseList } from './ExpenseList'
 
 export default async function ExpensesPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Not authorized.</p>
-      </main>
-    )
+    return <NotAuthorized />
   }
 
   const member = await isHouseholdMember(session.user.id, params.id)
   if (!member) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Not authorized.</p>
-      </main>
-    )
+    return <NotAuthorized />
   }
 
   const [household, expenses] = await Promise.all([
@@ -34,16 +28,12 @@ export default async function ExpensesPage({ params }: { params: { id: string } 
   ])
 
   if (!household) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-8">
-        <p>Household not found.</p>
-      </main>
-    )
+    return <NotAuthorized message="Household not found." />
   }
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 p-8">
-      <h1 className="text-xl font-semibold">{household.name} — Expenses</h1>
+      <PageHeader title={`${household.name} — Expenses`} />
       <div className="w-full max-w-2xl">
         <ExpenseList
           householdId={household.id}

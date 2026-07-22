@@ -1,6 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type MemberRow = {
   id: string
@@ -27,21 +30,28 @@ export function MemberList({
     if (res.ok) router.refresh()
   }
 
+  if (members.length === 0) {
+    return <EmptyState>No members yet.</EmptyState>
+  }
+
   return (
-    <ul className="flex flex-col gap-2">
+    <Card className="flex flex-col divide-y divide-neutral-200 p-0 dark:divide-neutral-800">
       {members.map((m) => (
-        <li key={m.id} className="flex items-center gap-3">
-          <span>
-            {m.displayName || '(unnamed)'} — {m.role.toLowerCase()}
-            {!m.userId && <span className="text-neutral-500"> (no login)</span>}
+        <div key={m.id} className="flex items-center justify-between px-4 py-3">
+          <span className="text-neutral-900 dark:text-neutral-100">
+            {m.displayName || '(unnamed)'}
+            <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
+              {m.role.toLowerCase()}
+              {!m.userId && ' · no login'}
+            </span>
           </span>
           {isAdmin && (
-            <button onClick={() => remove(m.id)} className="text-sm text-red-600 underline">
+            <Button variant="danger" onClick={() => remove(m.id)}>
               Remove
-            </button>
+            </Button>
           )}
-        </li>
+        </div>
       ))}
-    </ul>
+    </Card>
   )
 }

@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/Card'
+import { Input, Select } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 
 type MemberOption = { id: string; displayName: string }
 
@@ -59,88 +62,84 @@ export function ExpenseForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded border p-4">
-      <div className="flex gap-2">
-        <select
-          value={payerId}
-          onChange={(e) => setPayerId(e.target.value)}
-          className="rounded border px-3 py-2 text-black"
-        >
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.displayName}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="rounded border px-3 py-2 text-black"
-        />
-        <input
-          type="text"
-          required
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder="Category (e.g. Rent)"
-          className="rounded border px-3 py-2 text-black"
-        />
-      </div>
-      <div className="flex gap-2">
-        <select
-          value={originalCurrency}
-          onChange={(e) => setOriginalCurrency(e.target.value)}
-          className="rounded border px-3 py-2 text-black"
-        >
-          <option value="EUR">EUR</option>
-          <option value="IDR">IDR</option>
-        </select>
-        <input
-          type="number"
-          step="0.01"
-          required
-          value={originalAmount}
-          onChange={(e) => setOriginalAmount(e.target.value)}
-          placeholder="Amount"
-          className="rounded border px-3 py-2 text-black"
-        />
-        {originalCurrency !== 'EUR' && (
-          <input
-            type="number"
-            step="0.000001"
+    <Card>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Select value={payerId} onChange={(e) => setPayerId(e.target.value)}>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.displayName}
+              </option>
+            ))}
+          </Select>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input
+            type="text"
             required
-            value={exchangeRate}
-            onChange={(e) => setExchangeRate(e.target.value)}
-            placeholder={`1 EUR = ? ${originalCurrency}`}
-            className="rounded border px-3 py-2 text-black"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="Category (e.g. Rent)"
           />
-        )}
-      </div>
-      <input
-        type="text"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Notes (optional)"
-        className="rounded border px-3 py-2 text-black"
-      />
-      <fieldset className="flex flex-col gap-1">
-        <legend className="text-sm text-neutral-500">Split equally between:</legend>
-        {members.map((m) => (
-          <label key={m.id} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={selectedMemberIds.includes(m.id)}
-              onChange={() => toggleMember(m.id)}
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Select
+            value={originalCurrency}
+            onChange={(e) => setOriginalCurrency(e.target.value)}
+          >
+            <option value="EUR">EUR</option>
+            <option value="IDR">IDR</option>
+          </Select>
+          <Input
+            type="number"
+            step="0.01"
+            required
+            value={originalAmount}
+            onChange={(e) => setOriginalAmount(e.target.value)}
+            placeholder="Amount"
+          />
+          {originalCurrency !== 'EUR' && (
+            <Input
+              type="number"
+              step="0.000001"
+              required
+              value={exchangeRate}
+              onChange={(e) => setExchangeRate(e.target.value)}
+              placeholder={`1 EUR = ? ${originalCurrency}`}
             />
-            {m.displayName}
-          </label>
-        ))}
-      </fieldset>
-      <button type="submit" className="rounded bg-black px-4 py-2 text-white">
-        Add expense
-      </button>
-      {status && <p className="text-sm text-red-600">{status}</p>}
-    </form>
+          )}
+        </div>
+        <Input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Notes (optional)"
+        />
+        <fieldset className="flex flex-col gap-1">
+          <legend className="mb-1 text-sm text-neutral-500 dark:text-neutral-400">
+            Split equally between:
+          </legend>
+          <div className="flex flex-wrap gap-4">
+            {members.map((m) => (
+              <label
+                key={m.id}
+                className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedMemberIds.includes(m.id)}
+                  onChange={() => toggleMember(m.id)}
+                  className="accent-indigo-600"
+                />
+                {m.displayName}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div>
+          <Button type="submit">Add expense</Button>
+        </div>
+        {status && <p className="text-sm text-red-600">{status}</p>}
+      </form>
+    </Card>
   )
 }
