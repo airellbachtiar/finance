@@ -18,10 +18,13 @@ describe('invites', () => {
     expect(await isInvited(TEST_EMAIL)).toBe(true)
   })
 
-  it('is not invited after the invite is consumed', async () => {
+  it('remains invited after the invite is consumed, so a returning user can sign back in', async () => {
+    // Regression test: consumedAt is a record of first use, not an expiry.
+    // A prior bug required consumedAt === null, which meant every login
+    // after the first looked "uninvited" and got the user's account deleted.
     await prisma.invite.create({ data: { email: TEST_EMAIL } })
     await consumeInvite(TEST_EMAIL, 'placeholder-user-id', 'Test User')
-    expect(await isInvited(TEST_EMAIL)).toBe(false)
+    expect(await isInvited(TEST_EMAIL)).toBe(true)
   })
 
   it('creates a Member row linking the user to the invited household on consumption', async () => {

@@ -1,8 +1,14 @@
 import { prisma } from './db'
 
+/**
+ * An invite existing at all — consumed or not — means this email was
+ * legitimately approved. `consumedAt` is a record of first use, not an
+ * expiry: someone who already signed in once must still be able to sign
+ * back in on every later visit.
+ */
 export async function isInvited(email: string): Promise<boolean> {
   const invite = await prisma.invite.findUnique({ where: { email } })
-  return invite !== null && invite.consumedAt === null
+  return invite !== null
 }
 
 /**
