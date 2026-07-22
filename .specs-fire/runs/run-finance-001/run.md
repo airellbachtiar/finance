@@ -47,14 +47,14 @@ work_items:
   - id: dashboard-ui
     intent: family-ledger
     mode: confirm
-    status: in_progress
-    current_phase: plan
-    checkpoint_state: none
+    status: completed
+    current_phase: review
+    checkpoint_state: approved
     current_checkpoint: plan
-current_item: dashboard-ui
-status: in_progress
+current_item: null
+status: completed
 started: 2026-07-22T14:01:16.087Z
-completed: null
+completed: 2026-07-22T16:15:41.435Z
 ---
 
 # Run: run-finance-001
@@ -69,17 +69,27 @@ wide (7 work items)
 4. **expense-model** (confirm) — completed
 5. **settlement-model** (confirm) — completed
 6. **balance-engine** (validate) — completed
-7. **dashboard-ui** (confirm) — in_progress
+7. **dashboard-ui** (confirm) — completed
 
 
 ## Current Item
-dashboard-ui (confirm)
+(all completed)
 
 ## Files Created
-(none yet)
+(none)
 
 ## Files Modified
-(none yet)
+(none)
 
 ## Decisions
-(none yet)
+(none)
+
+
+## Summary
+
+- Work items completed: 7
+- Files created: 0
+- Files modified: 0
+- Tests added: 40
+- Coverage: 0%
+- Completed: 2026-07-22T16:15:41.435Z

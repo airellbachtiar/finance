@@ -4,10 +4,12 @@ title: "Dashboard: who owes who, how much, since when"
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: in_progress
+status: completed
 depends_on:
   - balance-engine
 created: 2026-07-22T00:00:00Z
+run_id: run-finance-001
+completed_at: 2026-07-22T16:15:41.435Z
 ---
 
 # Work Item: Dashboard: who owes who, how much, since when

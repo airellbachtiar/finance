@@ -1,8 +1,9 @@
 ---
 id: family-ledger
 title: Family Ledger — Shared Household & Family Balance Tracker
-status: pending
+status: completed
 created: 2026-07-22T00:00:00Z
+completed_at: 2026-07-22T16:15:41.462Z
 ---
 
 # Intent: Family Ledger — Shared Household & Family Balance Tracker

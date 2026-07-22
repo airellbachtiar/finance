@@ -284,4 +284,47 @@ Based on the approved design doc: `.specs-fire/intents/family-ledger/work-items/
 - Following the design doc's worked example precisely as the first test case (rent split 3 ways, one brother settles in full, the other doesn't).
 
 ---
+*Plan approved at checkpoint. Execution follows.*
+
+---
+
+## Work Item: dashboard-ui
+
+### Approach
+
+Turn the existing `/households/[id]` page into the actual dashboard, rather than adding a new top-level route — it's already the per-household home, already has the household name/members/nav links, and the household switcher (`/households`) already exists from `household-member-model`. Enhancing what's there avoids duplicate navigation structures.
+
+The page calls `getHouseholdBalances` (built in `balance-engine`) and renders the full pairwise breakdown — every member-pair with a nonzero balance, not just "relative to the viewer." Reasoning: this page is shared by every household member, balance-engine already computes the complete picture, and throwing away the other pairs' data (e.g. if Brother A ever owed Brother B something) would make the "family ledger" less transparent for no real benefit.
+
+**"Why"/contributing transactions**: a new `getPairHistory(householdId, memberIdA, memberIdB)` returns every expense-share and settlement between exactly those two members, chronologically, each tagged with who owes/paid whom (not an abstract "direction" — literal `fromMemberId`/`toMemberId`, same shape a UI can render directly as "X owes Y €N (Rent, July 1)" or "X paid Y €N (July 5)"). At this data scale (dozens of records/household/year), it's simplest and fast enough to precompute every pair's history server-side up front and let the client just expand/collapse — no extra network round-trip needed when a user clicks a balance row.
+
+**Household switcher**: rather than only relying on navigating back to `/households`, add a small "switch household" links row directly on the dashboard, listing the viewer's other households.
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `lib/dashboard.ts` | `getPairHistory(householdId, memberIdA, memberIdB)` — chronological expense/settlement history between two members |
+| `app/households/[id]/BalanceSummary.tsx` | Client component: renders each pairwise balance, expandable to show its contributing history |
+| `lib/dashboard.test.ts` | `getPairHistory` returns the right events in the right order, tagged with the correct from/to member, for both expenses and settlements |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `app/households/[id]/page.tsx` | Fetch `getHouseholdBalances` + `getPairHistory` for every pair, pass to `BalanceSummary`; add a small household-switcher links row (the viewer's other households) |
+
+### Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `lib/dashboard.test.ts` | Expense contributes correctly (ower → payer); settlement contributes correctly (from → to); events for unrelated pairs are excluded; chronological ordering; a non-login member's (Mama-style) history renders correctly since it's keyed purely by `memberId`, not by login status |
+
+## Technical Details
+
+- Mobile responsiveness: reuse the same Tailwind patterns already used in `ExpenseList`/`SettlementList` (small text, padding), wrapped in `overflow-x-auto` so the balance table degrades to horizontal scroll rather than breaking layout on narrow screens — not a bespoke mobile card layout, which would be disproportionate scope for this MVP.
+- Performance ("well under 1 second"): at this data scale (a handful of households, dozens of records/year each), a few batched Prisma queries are trivially fast — verified structurally (no N+1 queries: balances computed once, pair histories fetched in parallel via `Promise.all`), not load-tested against artificial volume, since that volume isn't realistic for this app.
+- "Since when" continues to mean "oldest activity between this pair," per `balance-engine`'s design doc — the UI's copy should say "activity since X," not "unpaid since X," to stay honest about what's actually being shown.
+
+---
 *Plan pending approval.*

@@ -20,113 +20,93 @@ intents:
     work_items:
       - id: project-scaffold
         title: Project scaffold, database, and deployment pipeline
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on: []
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: auth-setup
         title: Authentication (email + Google, invite-only)
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on:
           - project-scaffold
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: household-member-model
         title: Household and member data model
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on:
           - project-scaffold
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: expense-model
         title: Expense model with splits and currency conversion
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on:
           - household-member-model
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: settlement-model
         title: Settlement recording (transfers between members)
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on:
           - household-member-model
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: balance-engine
         title: Balance engine (derive balances from the event log)
-        status: pending
+        status: completed
         complexity: high
         mode: validate
         depends_on:
           - expense-model
           - settlement-model
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
       - id: dashboard-ui
         title: "Dashboard: who owes who, how much, since when"
-        status: pending
+        status: completed
         complexity: medium
         mode: confirm
         depends_on:
           - balance-engine
+        run_id: run-finance-001
+        completed_at: 2026-07-22T16:15:41.435Z
 runs:
-  active:
+  active: []
+  completed:
     - id: run-finance-001
       scope: wide
       work_items:
         - id: project-scaffold
           intent: family-ledger
           mode: confirm
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T14:28:59.290Z
         - id: auth-setup
           intent: family-ledger
           mode: confirm
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T15:20:44.499Z
         - id: household-member-model
           intent: family-ledger
           mode: confirm
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T15:35:09.545Z
         - id: expense-model
           intent: family-ledger
           mode: confirm
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T15:48:15.402Z
         - id: settlement-model
           intent: family-ledger
           mode: confirm
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T15:54:37.085Z
         - id: balance-engine
           intent: family-ledger
           mode: validate
-          status: completed
-          current_phase: review
-          checkpoint_state: approved
-          current_checkpoint: plan
-          completed_at: 2026-07-22T16:08:01.035Z
         - id: dashboard-ui
           intent: family-ledger
           mode: confirm
-          status: in_progress
-          current_phase: plan
-          checkpoint_state: none
-          current_checkpoint: plan
-      current_item: dashboard-ui
       started: 2026-07-22T14:01:16.087Z
-  completed: []
+      completed: 2026-07-22T16:15:41.435Z

@@ -404,3 +404,67 @@ No suggestions were skipped.
 - `.specs-fire/standards/coding-standards.md`
 - `.specs-fire/standards/testing-standards.md`
 - `.specs-fire/intents/family-ledger/work-items/balance-engine-design.md` (design doc, Checkpoint 1)
+
+---
+
+# Code Review Report — dashboard-ui
+
+**Reviewed**: 2026-07-22T18:17:00Z
+**Files Reviewed**: 5
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 1 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 0 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **1** | **0** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `lib/dashboard.ts`, `lib/dashboard.test.ts` (source, test)
+- `app/households/[id]/BalanceSummary.tsx` (source)
+- `app/households/[id]/page.tsx` (modified — balances, pair history, household switcher)
+
+## Auto-Fixed Issues
+
+### 1. [Code Quality] Unescaped apostrophe in JSX
+
+- **File**: `app/households/[id]/BalanceSummary.tsx`
+- **Diff**:
+
+```diff
+-    return <p className="text-neutral-500">Everyone's settled up.</p>
++    return <p className="text-neutral-500">Everyone&apos;s settled up.</p>
+```
+
+## Applied Suggestions
+
+None needed — this work item was a straightforward composition of `balance-engine` (already reviewed and tested) with a new read-only history query, following established UI patterns from `expense-model`/`settlement-model`.
+
+## Skipped Suggestions
+
+No suggestions were skipped.
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`
+
+---
+
+**MVP complete.** All 7 work items in the `family-ledger` intent have been planned, implemented, tested, code-reviewed, and deployed:
+
+| Work item | Mode | Status |
+|-----------|------|--------|
+| project-scaffold | confirm | ✅ complete |
+| auth-setup | confirm | ✅ complete |
+| household-member-model | confirm | ✅ complete |
+| expense-model | confirm | ✅ complete |
+| settlement-model | confirm | ✅ complete |
+| balance-engine | validate | ✅ complete |
+| dashboard-ui | confirm | ✅ complete |
