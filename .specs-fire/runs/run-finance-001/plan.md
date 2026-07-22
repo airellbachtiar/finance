@@ -209,4 +209,45 @@ Cross-household leakage prevention (an acceptance criterion) isn't fully enforce
 - "No caching of stale split data" is trivially satisfied right now — there's no cache anywhere in the codebase yet; the future `balance-engine` will read `Expense`/`ExpenseSplit` directly from Postgres on every computation.
 
 ---
+*Plan approved at checkpoint. Execution follows.*
+
+---
+
+## Work Item: settlement-model
+
+### Approach
+
+`Settlement` (household, from-member, to-member, date, notes, original currency/amount, exchange rate, converted EUR amount) — same currency-handling shape as `Expense` (`lib/currency.ts`'s `convertToEur` is reused directly), but no splits: a settlement is a single transfer between exactly two members, not tied to any specific expense. This is what makes it work for both routine transfers ("brother paid this month's rent") and irregular bulk reimbursements ("Mama sent €10,000 covering several months at once") — it just reduces the net balance between those two members, whatever that balance happens to be.
+
+**Admin-gated, unlike expenses**: the plan for `expense-model` let any household member log an expense (low stakes, easy to fix if wrong). Settlements are different — recording one is effectively saying "this debt is now paid," which is more consequential to get wrong or fake. Matching the acceptance criteria's own wording ("**Admin** can record a settlement"), creating/editing/deleting a settlement is admin-only; any member can still view settlement history.
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `lib/settlements.ts` | `createSettlement`, `updateSettlement`, `deleteSettlement` — validates `fromMemberId !== toMemberId` and both members belong to the household |
+| `app/api/households/[id]/settlements/route.ts` | `GET` list (any member), `POST` create (admin only) |
+| `app/api/households/[id]/settlements/[settlementId]/route.ts` | `PATCH` update, `DELETE` remove (admin only) |
+| `app/households/[id]/settlements/page.tsx` + `SettlementForm.tsx` + `SettlementList.tsx` | List settlement history, add-settlement form (admin only sees the form) |
+| `lib/settlements.test.ts` | Create a settlement; reject a member settling with themselves; reject a member from a different household; non-EUR conversion stores both amounts; update; delete |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `prisma/schema.prisma` | Add `Settlement`; back-relations on `Household`/`Member` (`SettlementFrom`/`SettlementTo`) |
+| `app/households/[id]/page.tsx` | Link to the household's settlements page |
+
+### Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `lib/settlements.test.ts` | Valid settlement between two members; rejects same-member settlement; rejects a member from a different household; non-EUR conversion; update recomputes conversion; delete removes it |
+
+## Technical Details
+
+- `Settlement.originalAmount`/`convertedAmountEur` are `Decimal(14, 2)`, `exchangeRate` is `Decimal(14, 6)` — identical shape to `Expense`, reusing `lib/currency.ts`'s `convertToEur` rather than duplicating conversion logic.
+- No IBAN/QR/"mark as paid" UX here — deferred per the intent brief. This is purely "record that a transfer happened."
+
+---
 *Plan pending approval.*

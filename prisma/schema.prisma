@@ -76,12 +76,13 @@ enum Role {
 }
 
 model Household {
-  id        String    @id @default(cuid())
-  name      String
-  createdAt DateTime  @default(now())
-  members   Member[]
-  invites   Invite[]
-  expenses  Expense[]
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  members     Member[]
+  invites     Invite[]
+  expenses    Expense[]
+  settlements Settlement[]
 }
 
 // A Member is a single household membership. userId is nullable so a
@@ -98,8 +99,10 @@ model Member {
   userId      String?
   user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  expensesPaid  Expense[]      @relation("ExpensePayer")
-  expenseSplits ExpenseSplit[]
+  expensesPaid    Expense[]      @relation("ExpensePayer")
+  expenseSplits   ExpenseSplit[]
+  settlementsFrom Settlement[]   @relation("SettlementFrom")
+  settlementsTo   Settlement[]   @relation("SettlementTo")
 
   @@unique([householdId, userId])
 }
@@ -136,4 +139,25 @@ model ExpenseSplit {
   shareEur  Decimal @db.Decimal(14, 2)
 
   @@unique([expenseId, memberId])
+}
+
+// --- Settlements ---
+// A transfer between two members that discharges (part of) their net
+// balance. Not tied to any specific expense — this is what makes it work
+// for both routine transfers and irregular bulk reimbursements.
+model Settlement {
+  id                 String    @id @default(cuid())
+  householdId        String
+  household          Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  fromMemberId       String
+  fromMember         Member    @relation("SettlementFrom", fields: [fromMemberId], references: [id])
+  toMemberId         String
+  toMember           Member    @relation("SettlementTo", fields: [toMemberId], references: [id])
+  date               DateTime
+  notes              String?
+  originalCurrency   String
+  originalAmount     Decimal   @db.Decimal(14, 2)
+  exchangeRate       Decimal?  @db.Decimal(14, 6)
+  convertedAmountEur Decimal   @db.Decimal(14, 2)
+  createdAt          DateTime  @default(now())
 }

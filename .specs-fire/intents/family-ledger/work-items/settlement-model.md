@@ -4,10 +4,12 @@ title: Settlement recording (transfers between members)
 intent: family-ledger
 complexity: medium
 mode: confirm
-status: in_progress
+status: completed
 depends_on:
   - household-member-model
 created: 2026-07-22T00:00:00Z
+run_id: run-finance-001
+completed_at: 2026-07-22T15:54:37.085Z
 ---
 
 # Work Item: Settlement recording (transfers between members)

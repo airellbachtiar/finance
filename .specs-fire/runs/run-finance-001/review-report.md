@@ -314,3 +314,37 @@ No suggestions were skipped.
 
 - `.specs-fire/standards/coding-standards.md`
 - `.specs-fire/standards/testing-standards.md`
+
+---
+
+# Code Review Report — settlement-model
+
+**Reviewed**: 2026-07-22T18:00:00Z
+**Files Reviewed**: 8
+
+## Summary
+
+| Category | Auto-Fixed | Applied | Skipped |
+|----------|------------|---------|---------|
+| Code Quality | 0 | 0 | 0 |
+| Security | 0 | 0 | 0 |
+| Architecture | 0 | 0 | 0 |
+| Testing | 0 | 0 | 0 |
+| **Total** | **0** | **0** | **0** |
+
+**Tests Status**: Passing
+
+## Files Reviewed
+
+- `prisma/schema.prisma` (schema)
+- `lib/settlements.ts`, `lib/settlements.test.ts` (source, test)
+- `app/api/households/[id]/settlements/route.ts`, `app/api/households/[id]/settlements/[settlementId]/route.ts` (source)
+- `app/households/[id]/settlements/page.tsx`, `SettlementForm.tsx`, `SettlementList.tsx` (source)
+- `app/households/[id]/page.tsx` (modified — added link)
+
+No issues found. This work item closely mirrored `expense-model`'s established patterns (currency conversion via the shared `lib/currency.ts`, household-scoped auth checks), and the admin-gating decision was locked in during planning rather than discovered mid-implementation.
+
+## Standards Referenced
+
+- `.specs-fire/standards/coding-standards.md`
+- `.specs-fire/standards/testing-standards.md`
