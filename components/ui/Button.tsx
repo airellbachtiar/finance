@@ -4,11 +4,11 @@ type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    'bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-300 dark:disabled:bg-indigo-900',
+    'bg-emerald-800 text-white hover:bg-emerald-900 disabled:bg-emerald-300 dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:disabled:bg-emerald-900',
   secondary:
     'border border-neutral-300 dark:border-neutral-700 bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800',
   danger: 'text-red-600 hover:text-red-700 hover:underline',
-  ghost: 'text-indigo-600 dark:text-indigo-400 hover:underline',
+  ghost: 'text-emerald-600 dark:text-emerald-400 hover:underline',
 }
 
 export function Button({

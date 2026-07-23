@@ -95,94 +95,95 @@ export function BalanceSummary({
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 overflow-x-auto">
-      {balances.map((b, index) => (
-        <Card key={`${b.debtorMemberId}-${b.creditorMemberId}`} className="p-0">
-          <button
-            onClick={() => toggle(index)}
-            className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
-          >
-            <span className="text-neutral-900 dark:text-neutral-100">
-              <strong>{nameOf(b.debtorMemberId)}</strong> owes{' '}
-              <strong>{nameOf(b.creditorMemberId)}</strong>{' '}
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                €{b.amountEur}
+    <Card className="flex flex-col divide-y divide-neutral-200 overflow-x-auto p-0 dark:divide-neutral-800">
+      {balances.map((b, index) => {
+        const key = `${b.debtorMemberId}-${b.creditorMemberId}`
+        return (
+          <div key={key}>
+            <button
+              onClick={() => toggle(index)}
+              className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
+            >
+              <span className="text-neutral-900 dark:text-neutral-100">
+                <strong>{nameOf(b.debtorMemberId)}</strong> owes{' '}
+                <strong>{nameOf(b.creditorMemberId)}</strong>{' '}
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                  €{b.amountEur}
+                </span>
               </span>
-            </span>
-            <span className="whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-              since {new Date(b.since).toLocaleDateString()}
-            </span>
-          </button>
-          {expanded.has(index) && (
-            <div className="flex flex-col gap-4 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800">
-              <ul className="flex flex-col gap-1 text-sm">
-                {b.history.map((h, i) => (
-                  <li
-                    key={i}
-                    className="flex justify-between text-neutral-600 dark:text-neutral-300"
-                  >
-                    <span>
-                      {h.type === 'expense' ? (
-                        <>
-                          {nameOf(h.fromMemberId)} owed {nameOf(h.toMemberId)} — {h.description}
-                        </>
-                      ) : (
-                        <>
-                          {nameOf(h.fromMemberId)} paid {nameOf(h.toMemberId)}
-                          {h.description ? ` — ${h.description}` : ''}
-                        </>
-                      )}
-                    </span>
-                    <span className="whitespace-nowrap">
-                      €{h.amountEur} ({new Date(h.date).toLocaleDateString()})
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <span className="whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                since {new Date(b.since).toLocaleDateString()}
+              </span>
+            </button>
+            {expanded.has(index) && (
+              <div className="flex flex-col gap-4 px-4 pb-4">
+                <ul className="flex flex-col gap-1 text-sm">
+                  {b.history.map((h, i) => (
+                    <li
+                      key={i}
+                      className="flex justify-between text-neutral-600 dark:text-neutral-300"
+                    >
+                      <span>
+                        {h.type === 'expense' ? (
+                          <>
+                            {nameOf(h.fromMemberId)} owed {nameOf(h.toMemberId)} — {h.description}
+                          </>
+                        ) : (
+                          <>
+                            {nameOf(h.fromMemberId)} paid {nameOf(h.toMemberId)}
+                            {h.description ? ` — ${h.description}` : ''}
+                          </>
+                        )}
+                      </span>
+                      <span className="whitespace-nowrap">
+                        €{h.amountEur} ({new Date(h.date).toLocaleDateString()})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-              {b.paymentDetails && (
-                <div className="flex flex-col gap-3 rounded-md border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-900 dark:bg-indigo-950 sm:flex-row sm:items-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- inline client-generated data: URI, no benefit from next/image optimization */}
-                  <img
-                    src={b.paymentDetails.qrDataUrl}
-                    alt="SEPA payment QR code"
-                    width={110}
-                    height={110}
-                    className="self-center rounded bg-white p-1"
-                  />
-                  <div className="flex flex-1 flex-col gap-1 text-sm">
-                    <p className="text-neutral-700 dark:text-neutral-300">
-                      Pay <strong>{b.paymentDetails.beneficiaryName}</strong> — scan this QR in
-                      your banking app, or copy the IBAN.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <code className="rounded bg-white px-2 py-1 text-xs dark:bg-neutral-900">
-                        {b.paymentDetails.iban}
-                      </code>
-                      <Button variant="secondary" onClick={() => copyIban(b.paymentDetails!.iban)}>
-                        {copied === b.paymentDetails.iban ? 'Copied!' : 'Copy IBAN'}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      Reference: {b.paymentDetails.reference}
-                    </p>
-                    <div className="mt-1">
-                      <Button
-                        onClick={() => markAsPaid(b)}
-                        disabled={markingPaid === `${b.debtorMemberId}-${b.creditorMemberId}`}
-                      >
-                        {markingPaid === `${b.debtorMemberId}-${b.creditorMemberId}`
-                          ? 'Recording…'
-                          : 'Mark as paid'}
-                      </Button>
+                {b.paymentDetails && (
+                  <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800 sm:flex-row sm:items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- inline client-generated data: URI, no benefit from next/image optimization */}
+                    <img
+                      src={b.paymentDetails.qrDataUrl}
+                      alt="SEPA payment QR code"
+                      width={104}
+                      height={104}
+                      className="self-center rounded border border-neutral-200 dark:border-neutral-800"
+                    />
+                    <div className="flex flex-1 flex-col gap-1 text-sm">
+                      <p className="text-neutral-700 dark:text-neutral-300">
+                        Pay <strong>{b.paymentDetails.beneficiaryName}</strong> — scan this QR in
+                        your banking app, or copy the IBAN.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <code className="rounded bg-neutral-100 px-2 py-1 text-xs dark:bg-neutral-800">
+                          {b.paymentDetails.iban}
+                        </code>
+                        <Button
+                          variant="secondary"
+                          onClick={() => copyIban(b.paymentDetails!.iban)}
+                        >
+                          {copied === b.paymentDetails.iban ? 'Copied!' : 'Copy IBAN'}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        Reference: {b.paymentDetails.reference}
+                      </p>
+                      <div className="mt-1">
+                        <Button onClick={() => markAsPaid(b)} disabled={markingPaid === key}>
+                          {markingPaid === key ? 'Recording…' : 'Mark as paid'}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </Card>
-      ))}
-    </div>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </Card>
   )
 }

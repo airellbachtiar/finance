@@ -19,7 +19,7 @@ export function AppHeader() {
       <div className="flex min-w-0 items-center gap-3 sm:gap-4">
         <Link
           href="/tutorial"
-          className="shrink-0 text-sm text-neutral-500 hover:text-indigo-600 dark:text-neutral-400 dark:hover:text-indigo-400"
+          className="shrink-0 text-sm text-neutral-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400"
         >
           How it works
         </Link>
@@ -31,7 +31,7 @@ export function AppHeader() {
             </span>
             <button
               onClick={() => signOut({ callbackUrl: '/signin' })}
-              className="shrink-0 text-indigo-600 hover:underline dark:text-indigo-400"
+              className="shrink-0 text-emerald-600 hover:underline dark:text-emerald-400"
             >
               Sign out
             </button>

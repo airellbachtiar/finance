@@ -88,7 +88,7 @@ export default async function HouseholdPage({ params }: { params: { id: string }
             <Link
               key={h.id}
               href={`/households/${h.id}`}
-              className="text-indigo-600 hover:underline dark:text-indigo-400"
+              className="text-emerald-600 hover:underline dark:text-emerald-400"
             >
               {h.name}
             </Link>

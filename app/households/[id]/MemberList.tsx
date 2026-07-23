@@ -51,7 +51,7 @@ function IbanEditor({
     return (
       <button
         onClick={() => setEditing(true)}
-        className="text-left text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+        className="text-left text-xs text-emerald-600 hover:underline dark:text-emerald-400"
       >
         {member.iban ? `IBAN: ${member.iban}` : 'Add IBAN'}
       </button>

@@ -31,7 +31,7 @@ export default async function HouseholdsPage() {
         <div className="grid w-full max-w-2xl gap-3 sm:grid-cols-2">
           {households.map((h) => (
             <Link key={h.id} href={`/households/${h.id}`}>
-              <Card className="transition-colors hover:border-indigo-400 dark:hover:border-indigo-600">
+              <Card className="transition-colors hover:border-emerald-400 dark:hover:border-emerald-600">
                 <p className="font-medium text-neutral-900 dark:text-neutral-100">{h.name}</p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {h.members.length} member{h.members.length === 1 ? '' : 's'}

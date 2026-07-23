@@ -158,7 +158,7 @@ export function ExpenseForm({
                   type="checkbox"
                   checked={selectedMemberIds.includes(m.id)}
                   onChange={() => toggleMember(m.id)}
-                  className="accent-indigo-600"
+                  className="accent-emerald-600"
                 />
                 {m.displayName}
               </label>

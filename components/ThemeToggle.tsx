@@ -36,7 +36,7 @@ export function ThemeToggle() {
             onClick={() => setTheme(option.value)}
             className={`rounded px-2 py-1 text-xs transition-colors ${
               selected
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-emerald-800 text-white dark:bg-emerald-700'
                 : 'text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
             }`}
           >
