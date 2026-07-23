@@ -21,31 +21,37 @@ export async function isInvited(email: string): Promise<boolean> {
  * household. Household-less invites (e.g. the bootstrap /invite page) just
  * mark the invite consumed.
  *
- * The User row referenced by `userId` is created by the NextAuth adapter
- * just before this runs, but under a fast double-fired OAuth callback (seen
- * on some mobile browsers) it can momentarily not exist yet by the time this
- * query lands — checked explicitly here rather than letting the upsert hit a
- * foreign key violation, since signIn callback errors surface to the user as
- * an opaque crash instead of a clean "try again" message.
+ * The `userId` NextAuth hands the signIn callback isn't trusted as-is: under
+ * a fast double-fired OAuth callback (seen on some mobile browsers) it can
+ * reference a row from a sibling in-flight request rather than the one that
+ * actually persisted, which previously caused this to either FK-violate or
+ * silently skip Member creation for a user who really does exist. Email is
+ * the stable, unique anchor — the User row is re-resolved by email here and
+ * its id used for the upsert, ignoring the possibly-stale `userId` param.
  */
 export async function consumeInvite(
   email: string,
-  userId: string,
+  _userId: string,
   displayName: string
 ): Promise<void> {
+  const normalizedEmail = normalizeEmail(email)
   const invite = await prisma.invite.update({
-    where: { email: normalizeEmail(email) },
+    where: { email: normalizedEmail },
     data: { consumedAt: new Date() },
   })
 
   if (!invite.householdId) return
 
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  })
   if (!user) return
+  const resolvedUserId = user.id
 
   await prisma.member.upsert({
-    where: { householdId_userId: { householdId: invite.householdId, userId } },
+    where: { householdId_userId: { householdId: invite.householdId, userId: resolvedUserId } },
     update: {},
-    create: { householdId: invite.householdId, userId, displayName },
+    create: { householdId: invite.householdId, userId: resolvedUserId, displayName },
   })
 }
