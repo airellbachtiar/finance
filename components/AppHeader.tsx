@@ -23,6 +23,14 @@ export function AppHeader() {
         >
           How it works
         </Link>
+        {session?.user && (
+          <Link
+            href="/profile"
+            className="shrink-0 text-sm text-neutral-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400"
+          >
+            Profile
+          </Link>
+        )}
         <ThemeToggle />
         {session?.user && (
           <div className="flex min-w-0 items-center gap-2 text-sm text-neutral-500 sm:gap-4 dark:text-neutral-400">

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Label } from '@/components/ui/Label'
+import { EXPENSE_CATEGORIES } from '@/lib/expense-categories'
 
 type MemberOption = { id: string; displayName: string }
 
@@ -18,7 +19,8 @@ export function ExpenseForm({
 }) {
   const router = useRouter()
   const [payerId, setPayerId] = useState(members[0]?.id ?? '')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState<string>(EXPENSE_CATEGORIES[0])
+  const [customCategory, setCustomCategory] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [originalCurrency, setOriginalCurrency] = useState('EUR')
   const [originalAmount, setOriginalAmount] = useState('')
@@ -42,7 +44,7 @@ export function ExpenseForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         payerId,
-        category,
+        category: category === 'Other' ? customCategory : category,
         date,
         originalCurrency,
         originalAmount,
@@ -52,7 +54,8 @@ export function ExpenseForm({
       }),
     })
     if (res.ok) {
-      setCategory('')
+      setCategory(EXPENSE_CATEGORIES[0])
+      setCustomCategory('')
       setOriginalAmount('')
       setExchangeRate('')
       setNotes('')
@@ -85,15 +88,31 @@ export function ExpenseForm({
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="expense-category">Category</Label>
-            <Input
+            <Select
               id="expense-category"
-              type="text"
-              required
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Rent"
-            />
+            >
+              {EXPENSE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
           </div>
+          {category === 'Other' && (
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="expense-category-other">Custom category</Label>
+              <Input
+                id="expense-category-other"
+                type="text"
+                required
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="e.g. Home repairs"
+              />
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1">

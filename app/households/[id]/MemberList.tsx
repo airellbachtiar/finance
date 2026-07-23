@@ -105,7 +105,7 @@ export function MemberList({
   }
 
   if (members.length === 0) {
-    return <EmptyState>No members yet — invite someone or add a non-login member below.</EmptyState>
+    return <EmptyState>No members yet — invite someone below.</EmptyState>
   }
 
   return (

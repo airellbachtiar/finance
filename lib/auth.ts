@@ -43,8 +43,13 @@ export const authOptions: NextAuthOptions = {
         return false
       }
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) token.id = user.id
+      // Fired by the profile page's `useSession().update({ name })` call, so
+      // a name change shows up immediately instead of needing a re-login.
+      if (trigger === 'update' && session?.name) {
+        token.name = session.name
+      }
       return token
     },
     async session({ session, token }) {
