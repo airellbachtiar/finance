@@ -20,19 +20,28 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user }) {
-      if (!user.email) return false
-      const allowed = await isInvited(user.email)
-      if (!allowed) {
-        // The Prisma adapter creates the User row before this callback runs,
-        // so an uninvited sign-in attempt would otherwise leave a dangling,
-        // unusable User record behind.
-        if (user.id) {
-          await prisma.user.delete({ where: { id: user.id } }).catch(() => {})
+      // NextAuth redirects to `/signin?error=...` using whatever this callback
+      // throws as the query value; an unexpected raw (multi-line) exception
+      // makes that an invalid HTTP header and crashes with an opaque, bodyless
+      // 500 instead of a real error page. Every exit must be a clean boolean.
+      try {
+        if (!user.email) return false
+        const allowed = await isInvited(user.email)
+        if (!allowed) {
+          // The Prisma adapter creates the User row before this callback runs,
+          // so an uninvited sign-in attempt would otherwise leave a dangling,
+          // unusable User record behind.
+          if (user.id) {
+            await prisma.user.delete({ where: { id: user.id } }).catch(() => {})
+          }
+          return false
         }
+        await consumeInvite(user.email, user.id, user.name ?? user.email)
+        return true
+      } catch (err) {
+        console.error('signIn callback failed:', err)
         return false
       }
-      await consumeInvite(user.email, user.id, user.name ?? user.email)
-      return true
     },
     async jwt({ token, user }) {
       if (user) token.id = user.id

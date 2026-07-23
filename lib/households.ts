@@ -40,10 +40,11 @@ export async function isHouseholdMember(userId: string, householdId: string): Pr
  * (see lib/invites.ts consumeInvite).
  */
 export async function inviteMember(householdId: string, email: string) {
+  const normalizedEmail = email.trim().toLowerCase()
   return prisma.invite.upsert({
-    where: { email },
+    where: { email: normalizedEmail },
     update: { householdId },
-    create: { email, householdId },
+    create: { email: normalizedEmail, householdId },
   })
 }
 

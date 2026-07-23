@@ -10,10 +10,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { email } = await req.json()
-  if (!email || typeof email !== 'string') {
+  const { email: rawEmail } = await req.json()
+  if (!rawEmail || typeof rawEmail !== 'string') {
     return NextResponse.json({ error: 'email is required' }, { status: 400 })
   }
+  const email = rawEmail.trim().toLowerCase()
 
   const invite = await prisma.invite.upsert({
     where: { email },
