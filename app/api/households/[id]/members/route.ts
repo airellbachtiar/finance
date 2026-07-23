@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isHouseholdAdmin, isHouseholdMember, inviteMember, addNonLoginMember } from '@/lib/households'
+import { sendInviteEmail } from '@/lib/mailer'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -34,7 +35,20 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   if (typeof body.email === 'string' && body.email) {
     const invite = await inviteMember(params.id, body.email)
-    return NextResponse.json({ invite })
+
+    let emailSent = true
+    try {
+      const household = await prisma.household.findUnique({
+        where: { id: params.id },
+        select: { name: true },
+      })
+      await sendInviteEmail(body.email, household?.name)
+    } catch (err) {
+      emailSent = false
+      console.error('Failed to send invite email:', err)
+    }
+
+    return NextResponse.json({ invite, emailSent })
   }
 
   if (typeof body.displayName === 'string' && body.displayName) {

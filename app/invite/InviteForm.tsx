@@ -19,8 +19,17 @@ export function InviteForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     })
-    setStatus(res.ok ? `Invited ${email}` : 'Failed to create invite')
-    if (res.ok) setEmail('')
+    if (res.ok) {
+      const body = await res.json()
+      setStatus(
+        body.emailSent
+          ? `Invited ${email} — invite email sent`
+          : `Invited ${email}, but the email failed to send — let them know to sign in directly`
+      )
+      setEmail('')
+    } else {
+      setStatus('Failed to create invite')
+    }
     setSubmitting(false)
   }
 

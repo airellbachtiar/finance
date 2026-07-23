@@ -23,10 +23,17 @@ export function MemberForm({ householdId }: { householdId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     })
-    setStatus(res.ok ? `Invited ${email}` : 'Failed to invite')
     if (res.ok) {
+      const body = await res.json()
+      setStatus(
+        body.emailSent
+          ? `Invited ${email} — invite email sent`
+          : `Invited ${email}, but the email failed to send — let them know to sign in directly`
+      )
       setEmail('')
       router.refresh()
+    } else {
+      setStatus('Failed to invite')
     }
     setInvitingSubmitting(false)
   }

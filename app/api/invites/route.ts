@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { sendInviteEmail } from '@/lib/mailer'
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -20,5 +21,13 @@ export async function POST(req: NextRequest) {
     create: { email },
   })
 
-  return NextResponse.json({ invite })
+  let emailSent = true
+  try {
+    await sendInviteEmail(email)
+  } catch (err) {
+    emailSent = false
+    console.error('Failed to send invite email:', err)
+  }
+
+  return NextResponse.json({ invite, emailSent })
 }
