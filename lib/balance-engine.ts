@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from './db'
+import { Prisma, Expense, ExpenseSplit, Settlement } from '@prisma/client'
+import { getHouseholdLedger } from './ledger'
 
 export type PairBalance = {
   debtorMemberId: string
@@ -7,6 +7,8 @@ export type PairBalance = {
   amountEur: Prisma.Decimal
   since: Date
 }
+
+type ExpenseWithSplits = Expense & { splits: ExpenseSplit[] }
 
 type PairState = {
   netCents: Prisma.Decimal // positive => "b" (the lexicographically larger id) owes "a"
@@ -39,19 +41,15 @@ function applyDebt(
 }
 
 /**
- * Computes the net pairwise balance between every pair of members in a
- * household, derived entirely from its expense and settlement history.
- * Never reads or writes a stored "balance" — always recomputed.
+ * Pure computation: the net pairwise balance between every pair of members,
+ * given an already-fetched expense/settlement history. No DB access — this
+ * is what lets the dashboard reuse a single fetch across every balance's
+ * "why" history instead of re-querying per pair (see lib/dashboard.ts).
  */
-export async function getHouseholdBalances(householdId: string): Promise<PairBalance[]> {
-  const [expenses, settlements] = await Promise.all([
-    prisma.expense.findMany({
-      where: { householdId },
-      include: { splits: true },
-    }),
-    prisma.settlement.findMany({ where: { householdId } }),
-  ])
-
+export function computeBalances(
+  expenses: ExpenseWithSplits[],
+  settlements: Settlement[]
+): PairBalance[] {
   const net = new Map<string, PairState>()
 
   for (const expense of expenses) {
@@ -87,4 +85,14 @@ export async function getHouseholdBalances(householdId: string): Promise<PairBal
   }
 
   return results
+}
+
+/**
+ * Computes the net pairwise balance between every pair of members in a
+ * household, derived entirely from its expense and settlement history.
+ * Never reads or writes a stored "balance" — always recomputed.
+ */
+export async function getHouseholdBalances(householdId: string): Promise<PairBalance[]> {
+  const { expenses, settlements } = await getHouseholdLedger(householdId)
+  return computeBalances(expenses, settlements)
 }

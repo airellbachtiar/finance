@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
-import { prisma } from './db'
+import { Prisma, Expense, ExpenseSplit, Settlement } from '@prisma/client'
+import { getHouseholdLedger } from './ledger'
 
 export type PairEvent = {
   type: 'expense' | 'settlement'
@@ -10,41 +10,28 @@ export type PairEvent = {
   toMemberId: string
 }
 
+type ExpenseWithSplits = Expense & { splits: ExpenseSplit[] }
+
 /**
- * Every expense-share and settlement between exactly two members,
- * chronologically, each tagged with who owed/paid whom. This is the "why"
- * behind a balance-engine pairwise balance.
+ * Pure computation: every expense-share and settlement between exactly two
+ * members, chronologically, given an already-fetched household history. No
+ * DB access — lets the dashboard derive every balance's history from one
+ * shared fetch instead of a query per pair.
  */
-export async function getPairHistory(
-  householdId: string,
+export function derivePairHistory(
+  expenses: ExpenseWithSplits[],
+  settlements: Settlement[],
   memberIdA: string,
   memberIdB: string
-): Promise<PairEvent[]> {
-  const [expenses, settlements] = await Promise.all([
-    prisma.expense.findMany({
-      where: {
-        householdId,
-        OR: [
-          { payerId: memberIdA, splits: { some: { memberId: memberIdB } } },
-          { payerId: memberIdB, splits: { some: { memberId: memberIdA } } },
-        ],
-      },
-      include: { splits: true },
-    }),
-    prisma.settlement.findMany({
-      where: {
-        householdId,
-        OR: [
-          { fromMemberId: memberIdA, toMemberId: memberIdB },
-          { fromMemberId: memberIdB, toMemberId: memberIdA },
-        ],
-      },
-    }),
-  ])
-
+): PairEvent[] {
   const events: PairEvent[] = []
 
   for (const expense of expenses) {
+    const involvesPair =
+      (expense.payerId === memberIdA && expense.splits.some((s) => s.memberId === memberIdB)) ||
+      (expense.payerId === memberIdB && expense.splits.some((s) => s.memberId === memberIdA))
+    if (!involvesPair) continue
+
     const owerId = expense.payerId === memberIdA ? memberIdB : memberIdA
     const split = expense.splits.find((s) => s.memberId === owerId)
     if (!split) continue
@@ -59,6 +46,11 @@ export async function getPairHistory(
   }
 
   for (const settlement of settlements) {
+    const involvesPair =
+      (settlement.fromMemberId === memberIdA && settlement.toMemberId === memberIdB) ||
+      (settlement.fromMemberId === memberIdB && settlement.toMemberId === memberIdA)
+    if (!involvesPair) continue
+
     events.push({
       type: 'settlement',
       date: settlement.date,
@@ -70,4 +62,18 @@ export async function getPairHistory(
   }
 
   return events.sort((a, b) => a.date.getTime() - b.date.getTime())
+}
+
+/**
+ * Every expense-share and settlement between exactly two members,
+ * chronologically, each tagged with who owed/paid whom. This is the "why"
+ * behind a balance-engine pairwise balance.
+ */
+export async function getPairHistory(
+  householdId: string,
+  memberIdA: string,
+  memberIdB: string
+): Promise<PairEvent[]> {
+  const { expenses, settlements } = await getHouseholdLedger(householdId)
+  return derivePairHistory(expenses, settlements, memberIdA, memberIdB)
 }

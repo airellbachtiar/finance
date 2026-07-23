@@ -67,6 +67,8 @@ model Invite {
   household   Household? @relation(fields: [householdId], references: [id], onDelete: Cascade)
   createdAt   DateTime   @default(now())
   consumedAt  DateTime?
+
+  @@index([householdId])
 }
 
 // --- Household & membership ---
@@ -130,6 +132,9 @@ model Expense {
   convertedAmountEur Decimal        @db.Decimal(14, 2)
   createdAt          DateTime       @default(now())
   splits             ExpenseSplit[]
+
+  @@index([householdId])
+  @@index([payerId])
 }
 
 // One row per member sharing an expense; shareEur values for a given
@@ -143,6 +148,7 @@ model ExpenseSplit {
   shareEur  Decimal @db.Decimal(14, 2)
 
   @@unique([expenseId, memberId])
+  @@index([memberId])
 }
 
 // --- Settlements ---
@@ -164,4 +170,8 @@ model Settlement {
   exchangeRate       Decimal?  @db.Decimal(14, 6)
   convertedAmountEur Decimal   @db.Decimal(14, 2)
   createdAt          DateTime  @default(now())
+
+  @@index([householdId])
+  @@index([fromMemberId])
+  @@index([toMemberId])
 }

@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { isHouseholdAdmin, isHouseholdMember } from '@/lib/households'
-import { getHouseholdBalances } from '@/lib/balance-engine'
-import { getPairHistory } from '@/lib/dashboard'
+import { getHouseholdLedger } from '@/lib/ledger'
+import { computeBalances } from '@/lib/balance-engine'
+import { derivePairHistory } from '@/lib/dashboard'
 import { getPaymentDetails } from '@/lib/payment-details'
 import { NotAuthorized } from '@/components/ui/NotAuthorized'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -25,13 +26,13 @@ export default async function HouseholdPage({ params }: { params: { id: string }
     return <NotAuthorized />
   }
 
-  const [household, admin, balances, otherHouseholds, myMember] = await Promise.all([
+  const [household, admin, ledger, otherHouseholds, myMember] = await Promise.all([
     prisma.household.findUnique({
       where: { id: params.id },
       include: { members: { include: { user: { select: { iban: true } } } } },
     }),
     isHouseholdAdmin(session.user.id, params.id),
-    getHouseholdBalances(params.id),
+    getHouseholdLedger(params.id),
     prisma.household.findMany({
       where: { members: { some: { userId: session.user.id } }, NOT: { id: params.id } },
     }),
@@ -44,16 +45,20 @@ export default async function HouseholdPage({ params }: { params: { id: string }
     return <NotAuthorized message="Household not found." />
   }
 
+  // One fetch (above) covers every balance and every balance's "why" history —
+  // no per-pair DB round trips.
+  const balances = computeBalances(ledger.expenses, ledger.settlements)
   const balancesWithHistory = await Promise.all(
     balances.map(async (b) => {
       const isMyDebt = myMember?.id === b.debtorMemberId
-      const [history, paymentDetails] = await Promise.all([
-        getPairHistory(params.id, b.debtorMemberId, b.creditorMemberId),
-        isMyDebt
-          ? getPaymentDetails(params.id, b.creditorMemberId, b.amountEur.toString(), household.name)
-          : null,
-      ])
-      return { ...b, history, paymentDetails }
+      const paymentDetails = isMyDebt
+        ? await getPaymentDetails(params.id, b.creditorMemberId, b.amountEur.toString(), household.name)
+        : null
+      return {
+        ...b,
+        history: derivePairHistory(ledger.expenses, ledger.settlements, b.debtorMemberId, b.creditorMemberId),
+        paymentDetails,
+      }
     })
   )
 
