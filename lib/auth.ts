@@ -45,5 +45,11 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/signin',
+    // Without this, errors that aren't a signIn-callback rejection (e.g. a
+    // genuine OAuth protocol error like a missing state cookie) fall back to
+    // NextAuth's own bare built-in error page instead of the app's /signin,
+    // which is the only place that actually reads ?error= and shows a real
+    // message.
+    error: '/signin',
   },
 }
